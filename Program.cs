@@ -9,7 +9,7 @@ builder.Services.AddIdentity<Customer, IdentityRole>()
     .AddEntityFrameworkStores<ApplicationDbContext>()
     .AddDefaultTokenProviders();
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseNpgsql(builder.Configuration.GetConnectionString("PostgresConnection"))
+    options.UseNpgsql(builder.Configuration.GetConnectionString("ConnectionPostgres"))
     );
 // Add services to the container.
 builder.Services.AddControllers();
@@ -18,7 +18,11 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddHttpClient();
 
 var app = builder.Build();
-
+using (var scope = app.Services.CreateScope())
+{
+    var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
+    await RoleSeeder.SeedRoles(roleManager);
+}
 
 app.UseSwagger();
 
