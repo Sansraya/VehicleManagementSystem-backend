@@ -1,0 +1,44 @@
+using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
+using Scalar.AspNetCore;
+using VehicleManagementSystem.Data;
+using VehicleManagementSystem.Entities;
+
+var builder = WebApplication.CreateBuilder(args);
+builder.Services.AddIdentity<Customer, IdentityRole>()
+    .AddEntityFrameworkStores<ApplicationDbContext>()
+    .AddDefaultTokenProviders();
+builder.Services.AddDbContext<ApplicationDbContext>(options =>
+    options.UseNpgsql(builder.Configuration.GetConnectionString("PostgresConnection"))
+    );
+// Add services to the container.
+builder.Services.AddControllers();
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen();
+builder.Services.AddHttpClient();
+
+var app = builder.Build();
+
+
+app.UseSwagger();
+
+
+app.MapScalarApiReference(options =>
+{
+    options.WithOpenApiRoutePattern("/swagger/v1/swagger.json");
+    options.WithTitle("yahNepal API");
+});
+app.MapGet("/", context =>
+{
+    context.Response.Redirect("/scalar/v1");
+    return Task.CompletedTask;
+});
+
+app.UseHttpsRedirection();
+
+app.UseAuthentication();
+app.UseAuthorization();
+
+app.MapControllers();
+
+app.Run();
