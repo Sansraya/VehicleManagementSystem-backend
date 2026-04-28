@@ -22,6 +22,9 @@ using (var scope = app.Services.CreateScope())
 {
     var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
     await RoleSeeder.SeedRoles(roleManager);
+
+    var userManager = scope.ServiceProvider.GetRequiredService<UserManager<User>>();
+    await AdminSeeder.SeedAdmin(userManager);
 }
 
 app.UseSwagger();
