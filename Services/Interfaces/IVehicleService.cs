@@ -1,7 +1,6 @@
-using VehicleManagementSystem.Dtos;
 using VehicleManagementSystem.Dtos.Response;
 
-namespace VehicleManagementSystem.Services;
+namespace VehicleManagementSystem.Services.Interfaces;
 
 public interface IVehicleService
 {

@@ -3,6 +3,7 @@ using VehicleManagementSystem.Data;
 using VehicleManagementSystem.Dtos;
 using VehicleManagementSystem.Dtos.Response;
 using VehicleManagementSystem.Entities;
+using VehicleManagementSystem.Services.Interfaces;
 
 namespace VehicleManagementSystem.Services.Implementation;
 

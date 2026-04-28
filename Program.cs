@@ -5,6 +5,7 @@ using VehicleManagementSystem.Data;
 using VehicleManagementSystem.Entities;
 using VehicleManagementSystem.Services;
 using VehicleManagementSystem.Services.Implementation;
+using VehicleManagementSystem.Services.Interfaces;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddIdentity<User, IdentityRole>()
@@ -20,6 +21,7 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddHttpClient();
 
 builder.Services.AddScoped<IVehicleService, VehicleService>();
+builder.Services.AddScoped<ISaleService, SaleService>();
 
 var app = builder.Build();
 using (var scope = app.Services.CreateScope())

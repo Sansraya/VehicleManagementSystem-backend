@@ -8,7 +8,7 @@ public class SaleItem
 
     [ForeignKey("SaleId")]
     public Guid SaleId { get; set; }
-    public required Sale Sale { get; set; }
+    public Sale? Sale { get; set; }
     
     [ForeignKey("VehicleId")]
     public Guid? VehicleId { get; set; }

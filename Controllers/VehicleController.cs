@@ -4,6 +4,7 @@ using VehicleManagementSystem.Dtos;
 using VehicleManagementSystem.Dtos.Response;
 using VehicleManagementSystem.Entities;
 using VehicleManagementSystem.Services;
+using VehicleManagementSystem.Services.Interfaces;
 
 namespace VehicleManagementSystem.Controllers;
 
