@@ -2,14 +2,15 @@ using Microsoft.AspNetCore.Identity;
 
 namespace VehicleManagementSystem.Entities;
 
-public class Vehicle : IdentityUser
+public class Vehicle
 {
-    public string Brand { get; set; }
-    public string Model { get; set; }
-    public string VehicleNumber { get; set; }
-    public string Colour { get; set; }
-    public DateOnly ManufacturingYear { get; set; }
-    public string FuelType { get; set; }
-    public double Price { get; set; }
-    public bool IsAvailable { get; set; }
+    public Guid VehicleId { get; set; }
+    public required string Brand { get; set; }
+    public required string Model { get; set; }
+    public required string VehicleNumber { get; set; }
+    public required string Colour { get; set; }
+    public required DateOnly ManufacturingYear { get; set; }
+    public required string FuelType { get; set; }
+    public required double Price { get; set; }
+    public required bool IsAvailable { get; set; }
 }

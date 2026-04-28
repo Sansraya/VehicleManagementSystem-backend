@@ -15,11 +15,11 @@ namespace VehicleManagementSystem.Controllers
     public class CustomerController : ControllerBase
     {
         private readonly ApplicationDbContext dbContext;
-        private readonly UserManager<Customer> userManager;
-        private readonly SignInManager<Customer> signInManager;
+        private readonly UserManager<User> userManager;
+        private readonly SignInManager<User> signInManager;
 
 
-        public CustomerController(ApplicationDbContext dbContext, UserManager<Customer> userManager, SignInManager<Customer> signInManager)
+        public CustomerController(ApplicationDbContext dbContext, UserManager<User> userManager, SignInManager<User> signInManager)
         {
             this.dbContext = dbContext;
             this.userManager = userManager;
@@ -46,7 +46,7 @@ namespace VehicleManagementSystem.Controllers
 
             }
 
-            var customer = new Customer
+            var customer = new User
             {
                 UserName = model.Username,
                 Email = model.Email,
