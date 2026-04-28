@@ -154,6 +154,60 @@ namespace VehicleManagementSystem.Migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
+            modelBuilder.Entity("VehicleManagementSystem.Entities.Appointment", b =>
+                {
+                    b.Property<Guid>("AppointmentId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("AppointmentDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("CustomerId")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("ServiceType")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("AppointmentId");
+
+                    b.HasIndex("CustomerId");
+
+                    b.ToTable("Appointments");
+                });
+
+            modelBuilder.Entity("VehicleManagementSystem.Entities.PartRequest", b =>
+                {
+                    b.Property<Guid>("PartRequestId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("CustomerId")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("PartName")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("RequestDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("PartRequestId");
+
+                    b.HasIndex("CustomerId");
+
+                    b.ToTable("PartRequests");
             modelBuilder.Entity("VehicleManagementSystem.Entities.Invoice", b =>
                 {
                     b.Property<Guid>("InvoiceId")
@@ -383,6 +437,33 @@ namespace VehicleManagementSystem.Migrations
                     b.ToTable("SaleItems");
                 });
 
+            modelBuilder.Entity("VehicleManagementSystem.Entities.Review", b =>
+                {
+                    b.Property<Guid>("ReviewId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Comment")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("CustomerId")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<int>("Rating")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime>("ReviewDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("ReviewId");
+
+                    b.HasIndex("CustomerId");
+
+                    b.ToTable("Reviews");
+                });
+
             modelBuilder.Entity("VehicleManagementSystem.Entities.User", b =>
                 {
                     b.Property<string>("Id")
@@ -584,6 +665,26 @@ namespace VehicleManagementSystem.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("VehicleManagementSystem.Entities.Appointment", b =>
+                {
+                    b.HasOne("VehicleManagementSystem.Entities.User", "Customer")
+                        .WithMany()
+                        .HasForeignKey("CustomerId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Customer");
+                });
+
+            modelBuilder.Entity("VehicleManagementSystem.Entities.PartRequest", b =>
+                {
+                    b.HasOne("VehicleManagementSystem.Entities.User", "Customer")
+                        .WithMany()
+                        .HasForeignKey("CustomerId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Customer");
             modelBuilder.Entity("VehicleManagementSystem.Entities.Invoice", b =>
                 {
                     b.HasOne("VehicleManagementSystem.Entities.Sale", "Sale")
@@ -606,6 +707,7 @@ namespace VehicleManagementSystem.Migrations
                     b.Navigation("Vendor");
                 });
 
+            modelBuilder.Entity("VehicleManagementSystem.Entities.Review", b =>
             modelBuilder.Entity("VehicleManagementSystem.Entities.Sale", b =>
                 {
                     b.HasOne("VehicleManagementSystem.Entities.User", "Customer")
@@ -613,6 +715,9 @@ namespace VehicleManagementSystem.Migrations
                         .HasForeignKey("CustomerId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("Customer");
+                });
 
                     b.HasOne("VehicleManagementSystem.Entities.User", "Staff")
                         .WithMany()
