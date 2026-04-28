@@ -11,5 +11,6 @@ namespace VehicleManagementSystem.Data
         }
         public DbSet<Appointment> Appointments { get; set; }
         public DbSet<PartRequest> PartRequests { get; set; }
+        public DbSet<Review> Reviews { get; set; }
     }
 }

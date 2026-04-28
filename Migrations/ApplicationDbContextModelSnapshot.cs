@@ -290,6 +290,35 @@ namespace VehicleManagementSystem.Migrations
                     b.ToTable("PartRequests");
                 });
 
+            modelBuilder.Entity("VehicleManagementSystem.Entities.Review", b =>
+                {
+                    b.Property<int>("ReviewId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("ReviewId"));
+
+                    b.Property<string>("Comment")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("CustomerId")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<int>("Rating")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime>("ReviewDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("ReviewId");
+
+                    b.HasIndex("CustomerId");
+
+                    b.ToTable("Reviews");
+                });
+
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
                 {
                     b.HasOne("Microsoft.AspNetCore.Identity.IdentityRole", null)
@@ -353,6 +382,17 @@ namespace VehicleManagementSystem.Migrations
                 });
 
             modelBuilder.Entity("VehicleManagementSystem.Entities.PartRequest", b =>
+                {
+                    b.HasOne("VehicleManagementSystem.Entities.Customer", "Customer")
+                        .WithMany()
+                        .HasForeignKey("CustomerId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Customer");
+                });
+
+            modelBuilder.Entity("VehicleManagementSystem.Entities.Review", b =>
                 {
                     b.HasOne("VehicleManagementSystem.Entities.Customer", "Customer")
                         .WithMany()
