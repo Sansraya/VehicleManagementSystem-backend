@@ -3,6 +3,8 @@ using Microsoft.EntityFrameworkCore;
 using Scalar.AspNetCore;
 using VehicleManagementSystem.Data;
 using VehicleManagementSystem.Entities;
+using VehicleManagementSystem.Services;
+using VehicleManagementSystem.Services.Implementation;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddIdentity<User, IdentityRole>()
@@ -16,6 +18,8 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddHttpClient();
+
+builder.Services.AddScoped<IVehicleService, VehicleService>();
 
 var app = builder.Build();
 using (var scope = app.Services.CreateScope())

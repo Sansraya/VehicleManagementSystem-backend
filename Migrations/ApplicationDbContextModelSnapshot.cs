@@ -154,6 +154,40 @@ namespace VehicleManagementSystem.Migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
+            modelBuilder.Entity("VehicleManagementSystem.Entities.Invoice", b =>
+                {
+                    b.Property<Guid>("InvoiceId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<bool>("EmailSent")
+                        .HasColumnType("boolean");
+
+                    b.Property<DateTime?>("EmailSentAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("InvoiceNumber")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("IssuedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("SaleId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("InvoiceId");
+
+                    b.HasIndex("SaleId")
+                        .IsUnique();
+
+                    b.ToTable("Invoices");
+                });
+
             modelBuilder.Entity("VehicleManagementSystem.Entities.Parts", b =>
                 {
                     b.Property<Guid>("PartsId")
@@ -195,6 +229,95 @@ namespace VehicleManagementSystem.Migrations
                     b.HasIndex("VendorId");
 
                     b.ToTable("Parts");
+                });
+
+            modelBuilder.Entity("VehicleManagementSystem.Entities.Sale", b =>
+                {
+                    b.Property<Guid>("SaleId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("CustomerId")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<decimal>("DiscountAmount")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal>("FinalAmount")
+                        .HasColumnType("numeric");
+
+                    b.Property<string>("PaymentMethod")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Remarks")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("SaleDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("StaffId")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<decimal>("TotalAmount")
+                        .HasColumnType("numeric");
+
+                    b.HasKey("SaleId");
+
+                    b.HasIndex("CustomerId");
+
+                    b.HasIndex("StaffId");
+
+                    b.ToTable("Sales");
+                });
+
+            modelBuilder.Entity("VehicleManagementSystem.Entities.SaleItem", b =>
+                {
+                    b.Property<Guid>("SaleItemId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("ItemName")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("ItemType")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<double>("LineTotal")
+                        .HasColumnType("double precision");
+
+                    b.Property<Guid?>("PartsId")
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("Quantity")
+                        .HasColumnType("integer");
+
+                    b.Property<Guid>("SaleId")
+                        .HasColumnType("uuid");
+
+                    b.Property<double>("UnitPrice")
+                        .HasColumnType("double precision");
+
+                    b.Property<Guid?>("VehicleId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("SaleItemId");
+
+                    b.HasIndex("PartsId");
+
+                    b.HasIndex("SaleId");
+
+                    b.HasIndex("VehicleId");
+
+                    b.ToTable("SaleItems");
                 });
 
             modelBuilder.Entity("VehicleManagementSystem.Entities.User", b =>
@@ -398,6 +521,17 @@ namespace VehicleManagementSystem.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("VehicleManagementSystem.Entities.Invoice", b =>
+                {
+                    b.HasOne("VehicleManagementSystem.Entities.Sale", "Sale")
+                        .WithOne("Invoice")
+                        .HasForeignKey("VehicleManagementSystem.Entities.Invoice", "SaleId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Sale");
+                });
+
             modelBuilder.Entity("VehicleManagementSystem.Entities.Parts", b =>
                 {
                     b.HasOne("VehicleManagementSystem.Entities.Vendor", "Vendor")
@@ -407,6 +541,55 @@ namespace VehicleManagementSystem.Migrations
                         .IsRequired();
 
                     b.Navigation("Vendor");
+                });
+
+            modelBuilder.Entity("VehicleManagementSystem.Entities.Sale", b =>
+                {
+                    b.HasOne("VehicleManagementSystem.Entities.User", "Customer")
+                        .WithMany()
+                        .HasForeignKey("CustomerId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("VehicleManagementSystem.Entities.User", "Staff")
+                        .WithMany()
+                        .HasForeignKey("StaffId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Customer");
+
+                    b.Navigation("Staff");
+                });
+
+            modelBuilder.Entity("VehicleManagementSystem.Entities.SaleItem", b =>
+                {
+                    b.HasOne("VehicleManagementSystem.Entities.Parts", "Parts")
+                        .WithMany()
+                        .HasForeignKey("PartsId");
+
+                    b.HasOne("VehicleManagementSystem.Entities.Sale", "Sale")
+                        .WithMany("SaleItems")
+                        .HasForeignKey("SaleId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("VehicleManagementSystem.Entities.Vehicle", "Vehicle")
+                        .WithMany()
+                        .HasForeignKey("VehicleId");
+
+                    b.Navigation("Parts");
+
+                    b.Navigation("Sale");
+
+                    b.Navigation("Vehicle");
+                });
+
+            modelBuilder.Entity("VehicleManagementSystem.Entities.Sale", b =>
+                {
+                    b.Navigation("Invoice");
+
+                    b.Navigation("SaleItems");
                 });
 #pragma warning restore 612, 618
         }

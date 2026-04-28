@@ -14,6 +14,9 @@ namespace VehicleManagementSystem.Data
         public DbSet<Parts> Parts { get; set; }
         public DbSet<Vendor> Vendors { get; set; }
         public DbSet<User> User{ get; set; }
+        public DbSet<Sale> Sales { get; set; }
+        public DbSet<SaleItem> SaleItems { get; set; }
+        public DbSet<Invoice> Invoices { get; set; }
 
 
 
