@@ -16,7 +16,7 @@ namespace VehicleManagementSystem.Entities
 
         [ForeignKey("VendorId")]
         public Guid VendorId { get; set; }
-        public required Vendor Vendor { get; set; } 
+        public Vendor? Vendor { get; set; } 
 
     }
 }
