@@ -1,6 +1,5 @@
 ﻿using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
-using System.Security.Cryptography.X509Certificates;
 using VehicleManagementSystem.Entities;
 
 namespace VehicleManagementSystem.Data
@@ -10,12 +9,12 @@ namespace VehicleManagementSystem.Data
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options)
         {
         }
+
         public DbSet<Vehicle> Vehicles { get; set; }
         public DbSet<Parts> Parts { get; set; }
         public DbSet<Vendor> Vendors { get; set; }
-        public DbSet<User> User{ get; set; }
-
-
-
+        public DbSet<User> User { get; set; }
+        public DbSet<PurchaseInvoice> PurchaseInvoices { get; set; }
+        public DbSet<PurchaseInvoiceItem> PurchaseInvoiceItems { get; set; }
     }
 }
