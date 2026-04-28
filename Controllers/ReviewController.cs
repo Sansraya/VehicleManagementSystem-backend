@@ -43,7 +43,16 @@ namespace VehicleManagementSystem.Controllers
             dbContext.Reviews.Add(review);
             await dbContext.SaveChangesAsync();
 
-            return Ok(review);
+            var response = new ReviewResponseDto
+            {
+                ReviewId = review.ReviewId,
+                CustomerId = review.CustomerId,
+                Rating = review.Rating,
+                Comment = review.Comment,
+                ReviewDate = review.ReviewDate
+            };
+
+            return Ok(response);
         }
 
         [HttpGet("customer/{customerId}")]
@@ -52,6 +61,14 @@ namespace VehicleManagementSystem.Controllers
             var reviews = await dbContext.Reviews
                 .Where(r => r.CustomerId == customerId)
                 .OrderByDescending(r => r.ReviewDate)
+                .Select(r => new ReviewResponseDto
+                {
+                    ReviewId = r.ReviewId,
+                    CustomerId = r.CustomerId,
+                    Rating = r.Rating,
+                    Comment = r.Comment,
+                    ReviewDate = r.ReviewDate
+                })
                 .ToListAsync();
 
             return Ok(reviews);

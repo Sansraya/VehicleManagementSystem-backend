@@ -9,8 +9,13 @@ namespace VehicleManagementSystem.Data
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options)
         {
         }
+
         public DbSet<Appointment> Appointments { get; set; }
         public DbSet<PartRequest> PartRequests { get; set; }
         public DbSet<Review> Reviews { get; set; }
+
+        public DbSet<Vehicle> Vehicles { get; set; }
+        public DbSet<Parts> Parts { get; set; }
+        public DbSet<Vendor> Vendors { get; set; }
     }
 }

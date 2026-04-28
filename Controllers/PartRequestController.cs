@@ -38,7 +38,16 @@ namespace VehicleManagementSystem.Controllers
             dbContext.PartRequests.Add(request);
             await dbContext.SaveChangesAsync();
 
-            return Ok(request);
+            var response = new PartRequestResponseDto
+            {
+                PartRequestId = request.PartRequestId,
+                CustomerId = request.CustomerId,
+                PartName = request.PartName,
+                Description = request.Description,
+                RequestDate = request.RequestDate
+            };
+
+            return Ok(response);
         }
 
         [HttpGet("customer/{customerId}")]
@@ -47,6 +56,14 @@ namespace VehicleManagementSystem.Controllers
             var requests = await dbContext.PartRequests
                 .Where(r => r.CustomerId == customerId)
                 .OrderByDescending(r => r.RequestDate)
+                .Select(r => new PartRequestResponseDto
+                {
+                    PartRequestId = r.PartRequestId,
+                    CustomerId = r.CustomerId,
+                    PartName = r.PartName,
+                    Description = r.Description,
+                    RequestDate = r.RequestDate
+                })
                 .ToListAsync();
 
             return Ok(requests);

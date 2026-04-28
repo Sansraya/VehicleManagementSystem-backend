@@ -38,7 +38,16 @@ namespace VehicleManagementSystem.Controllers
             dbContext.Appointments.Add(appointment);
             await dbContext.SaveChangesAsync();
 
-            return Ok(appointment);
+            var response = new AppointmentResponseDto
+            {
+                AppointmentId = appointment.AppointmentId,
+                CustomerId = appointment.CustomerId,
+                AppointmentDate = appointment.AppointmentDate,
+                ServiceType = appointment.ServiceType,
+                Description = appointment.Description
+            };
+
+            return Ok(response);
         }
 
         [HttpGet("customer/{customerId}")]
@@ -47,6 +56,14 @@ namespace VehicleManagementSystem.Controllers
             var appointments = await dbContext.Appointments
                 .Where(a => a.CustomerId == customerId)
                 .OrderByDescending(a => a.AppointmentDate)
+                .Select(a => new AppointmentResponseDto
+                {
+                    AppointmentId = a.AppointmentId,
+                    CustomerId = a.CustomerId,
+                    AppointmentDate = a.AppointmentDate,
+                    ServiceType = a.ServiceType,
+                    Description = a.Description
+                })
                 .ToListAsync();
 
             return Ok(appointments);

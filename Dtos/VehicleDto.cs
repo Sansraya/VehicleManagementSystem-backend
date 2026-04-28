@@ -2,12 +2,12 @@ namespace VehicleManagementSystem.Dtos;
 
 public class VehicleDto
 {
-    public string Brand;
-    public string Model;
-    public string VehicleNumber;
-    public string Colour;
-    public DateOnly ManufacturingYear;
-    public string FuelType;
-    public double Price;
-    public bool IsAvailable;
+    public string Brand { get; set; }
+    public string Model { get; set; }
+    public string VehicleNumber { get; set; }
+    public string Colour { get; set; }
+    public DateOnly ManufacturingYear { get; set; }
+    public string FuelType { get; set; }
+    public double Price { get; set; }
+    public bool IsAvailable { get; set; }
 }
