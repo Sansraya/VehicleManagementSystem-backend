@@ -1,15 +1,18 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+using VehicleManagementSystem.Entities;
 
 namespace VehicleManagementSystem.Entities
 {
     public class Appointment
     {
         [Key]
-        public int AppointmentId { get; set; }
+        public Guid AppointmentId { get; set; } = Guid.NewGuid();
 
+        [ForeignKey("Customer")]
         public string CustomerId { get; set; } = string.Empty;
 
-        public Customer? Customer { get; set; }
+        public User? Customer { get; set; }
 
         public DateTime AppointmentDate { get; set; }
 

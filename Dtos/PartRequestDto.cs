@@ -1,4 +1,4 @@
-﻿namespace VehicleManagementSystem.Models
+﻿namespace VehicleManagementSystem.Dtos
 {
     public class PartRequestDto
     {

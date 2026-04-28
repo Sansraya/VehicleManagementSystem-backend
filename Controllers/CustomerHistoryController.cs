@@ -8,37 +8,34 @@ namespace VehicleManagementSystem.Controllers
     [ApiController]
     public class CustomerHistoryController : ControllerBase
     {
-        private readonly ApplicationDbContext _context;
+        private readonly ApplicationDbContext dbContext;
 
-        public CustomerHistoryController(ApplicationDbContext context)
+        public CustomerHistoryController(ApplicationDbContext dbContext)
         {
-            _context = context;
+            this.dbContext = dbContext;
         }
 
         [HttpGet("{customerId}")]
         public async Task<IActionResult> GetCustomerHistory(string customerId)
         {
-            var customerExists = await _context.Users.AnyAsync(u => u.Id == customerId);
+            var customerExists = await dbContext.Users.AnyAsync(u => u.Id == customerId);
 
             if (!customerExists)
             {
-                return NotFound(new
-                {
-                    message = "Customer not found."
-                });
+                return NotFound(new { message = "Customer not found." });
             }
 
-            var appointments = await _context.Appointments
+            var appointments = await dbContext.Appointments
                 .Where(a => a.CustomerId == customerId)
                 .OrderByDescending(a => a.AppointmentDate)
                 .ToListAsync();
 
-            var partRequests = await _context.PartRequests
+            var partRequests = await dbContext.PartRequests
                 .Where(p => p.CustomerId == customerId)
                 .OrderByDescending(p => p.RequestDate)
                 .ToListAsync();
 
-            var reviews = await _context.Reviews
+            var reviews = await dbContext.Reviews
                 .Where(r => r.CustomerId == customerId)
                 .OrderByDescending(r => r.ReviewDate)
                 .ToListAsync();

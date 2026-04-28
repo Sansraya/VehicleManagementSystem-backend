@@ -5,7 +5,7 @@ using VehicleManagementSystem.Data;
 using VehicleManagementSystem.Entities;
 
 var builder = WebApplication.CreateBuilder(args);
-builder.Services.AddIdentity<Customer, IdentityRole>()
+builder.Services.AddIdentity<User, IdentityRole>()
     .AddEntityFrameworkStores<ApplicationDbContext>()
     .AddDefaultTokenProviders();
 builder.Services.AddDbContext<ApplicationDbContext>(options =>

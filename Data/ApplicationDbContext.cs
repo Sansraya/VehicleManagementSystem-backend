@@ -4,7 +4,7 @@ using VehicleManagementSystem.Entities;
 
 namespace VehicleManagementSystem.Data
 {
-    public class ApplicationDbContext : IdentityDbContext<Customer>
+    public class ApplicationDbContext : IdentityDbContext<User>
     {
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options)
         {

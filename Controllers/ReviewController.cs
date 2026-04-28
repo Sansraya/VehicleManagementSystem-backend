@@ -1,8 +1,8 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using VehicleManagementSystem.Data;
+using VehicleManagementSystem.Dtos;
 using VehicleManagementSystem.Entities;
-using VehicleManagementSystem.Models;
 
 namespace VehicleManagementSystem.Controllers
 {
@@ -10,11 +10,11 @@ namespace VehicleManagementSystem.Controllers
     [ApiController]
     public class ReviewController : ControllerBase
     {
-        private readonly ApplicationDbContext _context;
+        private readonly ApplicationDbContext dbContext;
 
-        public ReviewController(ApplicationDbContext context)
+        public ReviewController(ApplicationDbContext dbContext)
         {
-            _context = context;
+            this.dbContext = dbContext;
         }
 
         [HttpPost]
@@ -22,20 +22,14 @@ namespace VehicleManagementSystem.Controllers
         {
             if (dto.Rating < 1 || dto.Rating > 5)
             {
-                return BadRequest(new
-                {
-                    message = "Rating must be between 1 and 5."
-                });
+                return BadRequest(new { message = "Rating must be between 1 and 5." });
             }
 
-            var customerExists = await _context.Users.AnyAsync(c => c.Id == dto.CustomerId);
+            var customerExists = await dbContext.Users.AnyAsync(u => u.Id == dto.CustomerId);
 
             if (!customerExists)
             {
-                return BadRequest(new
-                {
-                    message = "Invalid customerId. Customer does not exist."
-                });
+                return BadRequest(new { message = "Invalid customer ID." });
             }
 
             var review = new Review
@@ -46,8 +40,8 @@ namespace VehicleManagementSystem.Controllers
                 ReviewDate = DateTime.UtcNow
             };
 
-            _context.Reviews.Add(review);
-            await _context.SaveChangesAsync();
+            dbContext.Reviews.Add(review);
+            await dbContext.SaveChangesAsync();
 
             return Ok(review);
         }
@@ -55,7 +49,7 @@ namespace VehicleManagementSystem.Controllers
         [HttpGet("customer/{customerId}")]
         public async Task<IActionResult> GetReviews(string customerId)
         {
-            var reviews = await _context.Reviews
+            var reviews = await dbContext.Reviews
                 .Where(r => r.CustomerId == customerId)
                 .OrderByDescending(r => r.ReviewDate)
                 .ToListAsync();

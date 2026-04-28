@@ -1,8 +1,8 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using VehicleManagementSystem.Data;
+using VehicleManagementSystem.Dtos;
 using VehicleManagementSystem.Entities;
-using VehicleManagementSystem.Models;
 
 namespace VehicleManagementSystem.Controllers
 {
@@ -10,35 +10,41 @@ namespace VehicleManagementSystem.Controllers
     [ApiController]
     public class PartRequestController : ControllerBase
     {
-        private readonly ApplicationDbContext _context;
+        private readonly ApplicationDbContext dbContext;
 
-        public PartRequestController(ApplicationDbContext context)
+        public PartRequestController(ApplicationDbContext dbContext)
         {
-            _context = context;
+            this.dbContext = dbContext;
         }
 
-        // Create part request
         [HttpPost]
         public async Task<IActionResult> CreateRequest(PartRequestDto dto)
         {
+            var customerExists = await dbContext.Users.AnyAsync(u => u.Id == dto.CustomerId);
+
+            if (!customerExists)
+            {
+                return BadRequest(new { message = "Invalid customer ID." });
+            }
+
             var request = new PartRequest
             {
                 CustomerId = dto.CustomerId,
                 PartName = dto.PartName,
-                Description = dto.Description
+                Description = dto.Description,
+                RequestDate = DateTime.UtcNow
             };
 
-            _context.PartRequests.Add(request);
-            await _context.SaveChangesAsync();
+            dbContext.PartRequests.Add(request);
+            await dbContext.SaveChangesAsync();
 
             return Ok(request);
         }
 
-        // Get requests by customer
         [HttpGet("customer/{customerId}")]
         public async Task<IActionResult> GetRequests(string customerId)
         {
-            var requests = await _context.PartRequests
+            var requests = await dbContext.PartRequests
                 .Where(r => r.CustomerId == customerId)
                 .OrderByDescending(r => r.RequestDate)
                 .ToListAsync();

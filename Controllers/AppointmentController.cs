@@ -1,8 +1,8 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using VehicleManagementSystem.Data;
+using VehicleManagementSystem.Dtos;
 using VehicleManagementSystem.Entities;
-using VehicleManagementSystem.Models;
 
 namespace VehicleManagementSystem.Controllers
 {
@@ -10,16 +10,23 @@ namespace VehicleManagementSystem.Controllers
     [ApiController]
     public class AppointmentController : ControllerBase
     {
-        private readonly ApplicationDbContext _context;
+        private readonly ApplicationDbContext dbContext;
 
-        public AppointmentController(ApplicationDbContext context)
+        public AppointmentController(ApplicationDbContext dbContext)
         {
-            _context = context;
+            this.dbContext = dbContext;
         }
 
         [HttpPost]
         public async Task<IActionResult> CreateAppointment(AppointmentDto dto)
         {
+            var customerExists = await dbContext.Users.AnyAsync(u => u.Id == dto.CustomerId);
+
+            if (!customerExists)
+            {
+                return BadRequest(new { message = "Invalid customer ID." });
+            }
+
             var appointment = new Appointment
             {
                 CustomerId = dto.CustomerId,
@@ -28,8 +35,8 @@ namespace VehicleManagementSystem.Controllers
                 Description = dto.Description
             };
 
-            _context.Appointments.Add(appointment);
-            await _context.SaveChangesAsync();
+            dbContext.Appointments.Add(appointment);
+            await dbContext.SaveChangesAsync();
 
             return Ok(appointment);
         }
@@ -37,7 +44,7 @@ namespace VehicleManagementSystem.Controllers
         [HttpGet("customer/{customerId}")]
         public async Task<IActionResult> GetAppointments(string customerId)
         {
-            var appointments = await _context.Appointments
+            var appointments = await dbContext.Appointments
                 .Where(a => a.CustomerId == customerId)
                 .OrderByDescending(a => a.AppointmentDate)
                 .ToListAsync();

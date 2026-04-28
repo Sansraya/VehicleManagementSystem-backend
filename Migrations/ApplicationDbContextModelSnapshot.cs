@@ -156,18 +156,15 @@ namespace VehicleManagementSystem.Migrations
 
             modelBuilder.Entity("VehicleManagementSystem.Entities.Appointment", b =>
                 {
-                    b.Property<int>("AppointmentId")
+                    b.Property<Guid>("AppointmentId")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("AppointmentId"));
+                        .HasColumnType("uuid");
 
                     b.Property<DateTime>("AppointmentDate")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<string>("CustomerId")
-                        .IsRequired()
-                        .HasColumnType("text");
+                    b.Property<Guid>("CustomerId")
+                        .HasColumnType("uuid");
 
                     b.Property<string>("Description")
                         .IsRequired()
@@ -178,8 +175,6 @@ namespace VehicleManagementSystem.Migrations
                         .HasColumnType("text");
 
                     b.HasKey("AppointmentId");
-
-                    b.HasIndex("CustomerId");
 
                     b.ToTable("Appointments");
                 });
@@ -262,15 +257,12 @@ namespace VehicleManagementSystem.Migrations
 
             modelBuilder.Entity("VehicleManagementSystem.Entities.PartRequest", b =>
                 {
-                    b.Property<int>("RequestId")
+                    b.Property<Guid>("PartRequestId")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
+                        .HasColumnType("uuid");
 
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("RequestId"));
-
-                    b.Property<string>("CustomerId")
-                        .IsRequired()
-                        .HasColumnType("text");
+                    b.Property<Guid>("CustomerId")
+                        .HasColumnType("uuid");
 
                     b.Property<string>("Description")
                         .IsRequired()
@@ -283,28 +275,23 @@ namespace VehicleManagementSystem.Migrations
                     b.Property<DateTime>("RequestDate")
                         .HasColumnType("timestamp with time zone");
 
-                    b.HasKey("RequestId");
-
-                    b.HasIndex("CustomerId");
+                    b.HasKey("PartRequestId");
 
                     b.ToTable("PartRequests");
                 });
 
             modelBuilder.Entity("VehicleManagementSystem.Entities.Review", b =>
                 {
-                    b.Property<int>("ReviewId")
+                    b.Property<Guid>("ReviewId")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("ReviewId"));
+                        .HasColumnType("uuid");
 
                     b.Property<string>("Comment")
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<string>("CustomerId")
-                        .IsRequired()
-                        .HasColumnType("text");
+                    b.Property<Guid>("CustomerId")
+                        .HasColumnType("uuid");
 
                     b.Property<int>("Rating")
                         .HasColumnType("integer");
@@ -313,8 +300,6 @@ namespace VehicleManagementSystem.Migrations
                         .HasColumnType("timestamp with time zone");
 
                     b.HasKey("ReviewId");
-
-                    b.HasIndex("CustomerId");
 
                     b.ToTable("Reviews");
                 });
@@ -368,39 +353,6 @@ namespace VehicleManagementSystem.Migrations
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-                });
-
-            modelBuilder.Entity("VehicleManagementSystem.Entities.Appointment", b =>
-                {
-                    b.HasOne("VehicleManagementSystem.Entities.Customer", "Customer")
-                        .WithMany()
-                        .HasForeignKey("CustomerId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Customer");
-                });
-
-            modelBuilder.Entity("VehicleManagementSystem.Entities.PartRequest", b =>
-                {
-                    b.HasOne("VehicleManagementSystem.Entities.Customer", "Customer")
-                        .WithMany()
-                        .HasForeignKey("CustomerId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Customer");
-                });
-
-            modelBuilder.Entity("VehicleManagementSystem.Entities.Review", b =>
-                {
-                    b.HasOne("VehicleManagementSystem.Entities.Customer", "Customer")
-                        .WithMany()
-                        .HasForeignKey("CustomerId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Customer");
                 });
 #pragma warning restore 612, 618
         }
