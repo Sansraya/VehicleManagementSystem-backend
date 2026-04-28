@@ -23,7 +23,7 @@ namespace VehicleManagementSystem.Controllers
             var appointment = new Appointment
             {
                 CustomerId = dto.CustomerId,
-                AppointmentDate = dto.AppointmentDate,
+                AppointmentDate = dto.AppointmentDate.ToUniversalTime(),
                 ServiceType = dto.ServiceType,
                 Description = dto.Description
             };
