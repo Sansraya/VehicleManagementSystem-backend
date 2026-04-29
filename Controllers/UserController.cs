@@ -112,6 +112,23 @@ namespace VehicleManagementSystem.Controllers
 
         }
 
+        [HttpGet("all")]
+        public async Task<IActionResult> GetAllCustomers()
+        {
+            var customers = await userManager.GetUsersInRoleAsync("Customer");
+            var result = customers.Select(u => new
+            {
+                id = u.Id,
+                userName = u.UserName,
+                email = u.Email,
+                firstName = u.FirstName,
+                lastName = u.LastName,
+                phoneNumber = u.PhoneNumber,
+                address = u.Address,
+            });
+            return Ok(result);
+        }
+
     }
 
 }

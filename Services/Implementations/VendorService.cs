@@ -7,11 +7,11 @@ using VehicleManagementSystem.Services.Interfaces;
 
 namespace VehicleManagementSystem.Services.Implementations
 {
-    public class VendorService : IVendorService
+    public class VendorsService : IVendorService
     {
         private readonly ApplicationDbContext dbContext;
 
-        public VendorService(ApplicationDbContext dbContext)
+        public VendorsService(ApplicationDbContext dbContext)
         {
             this.dbContext = dbContext;
         }
