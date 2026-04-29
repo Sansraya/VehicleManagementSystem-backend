@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Identity;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace VehicleManagementSystem.Entities;
 
@@ -13,4 +14,9 @@ public class Vehicle
     public required string FuelType { get; set; }
     public required double Price { get; set; }
     public required bool IsAvailable { get; set; }
+
+    [ForeignKey("Owner")]
+    public string? OwnerId { get; set; }
+    public User? Owner { get; set; }
+
 }

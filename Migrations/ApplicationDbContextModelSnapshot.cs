@@ -570,6 +570,9 @@ namespace VehicleManagementSystem.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
+                    b.Property<string>("OwnerId")
+                        .HasColumnType("text");
+
                     b.Property<double>("Price")
                         .HasColumnType("double precision");
 
@@ -578,6 +581,8 @@ namespace VehicleManagementSystem.Migrations
                         .HasColumnType("text");
 
                     b.HasKey("VehicleId");
+
+                    b.HasIndex("OwnerId");
 
                     b.ToTable("Vehicles");
                 });
@@ -792,6 +797,15 @@ namespace VehicleManagementSystem.Migrations
                     b.Navigation("Sale");
 
                     b.Navigation("Vehicle");
+                });
+
+            modelBuilder.Entity("VehicleManagementSystem.Entities.Vehicle", b =>
+                {
+                    b.HasOne("VehicleManagementSystem.Entities.User", "Owner")
+                        .WithMany()
+                        .HasForeignKey("OwnerId");
+
+                    b.Navigation("Owner");
                 });
 
             modelBuilder.Entity("VehicleManagementSystem.Entities.PurchaseInvoice", b =>
