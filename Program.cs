@@ -45,6 +45,7 @@ builder.Services.AddScoped<IInvoiceService, InvoiceService>();
 builder.Services.AddScoped<IInventoryService, InventoryService>();
 builder.Services.AddScoped<IVehicleService, VehicleService>();
 builder.Services.AddScoped<ISaleService, SaleService>();
+builder.Services.AddScoped<IServiceBookingService, ServiceBookingService>();
 
 var app = builder.Build();
 
