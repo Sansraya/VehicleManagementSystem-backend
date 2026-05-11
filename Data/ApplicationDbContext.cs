@@ -23,6 +23,6 @@ namespace VehicleManagementSystem.Data
         public DbSet<Invoice> Invoices { get; set; }
         public DbSet<PurchaseInvoice> PurchaseInvoices { get; set; }
         public DbSet<PurchaseInvoiceItem> PurchaseInvoiceItems { get; set; }
-
+        public DbSet<ServiceBooking> ServiceBookings { get; set; }
     }
 }
