@@ -41,11 +41,11 @@ namespace VehicleManagementSystem.Controllers
                 return BadRequest(new { message = "Invalid vendor ID." });
             }
 
-            if (dto.AppointmentId == null && dto.PartId == null)
+            if (dto.AppointmentId == null && dto.PartId == null && dto.PartRequestId == null)
             {
                 return BadRequest(new
                 {
-                    message = "Review must be linked to either a vendor-related appointment or a vendor-related part."
+                    message = "Review must be linked to either a vendor-related appointment, part, or part request."
                 });
             }
 
@@ -82,12 +82,31 @@ namespace VehicleManagementSystem.Controllers
                 }
             }
 
+            if (dto.PartRequestId != null)
+            {
+                var partRequestExists = await dbContext.VendorAssignments
+                    .AnyAsync(v =>
+                        v.PartRequestId == dto.PartRequestId &&
+                        v.VendorId == dto.VendorId &&
+                        v.PartRequest != null &&
+                        v.PartRequest.CustomerId == dto.CustomerId);
+
+                if (!partRequestExists)
+                {
+                    return BadRequest(new
+                    {
+                        message = "Invalid vendor-related part request for this customer."
+                    });
+                }
+            }
+
             var review = new Review
             {
                 CustomerId = dto.CustomerId,
                 VendorId = dto.VendorId,
                 AppointmentId = dto.AppointmentId,
                 PartId = dto.PartId,
+                PartRequestId = dto.PartRequestId,
                 Rating = dto.Rating,
                 Comment = dto.Comment,
                 ReviewDate = DateTime.UtcNow
@@ -103,6 +122,7 @@ namespace VehicleManagementSystem.Controllers
                 VendorId = review.VendorId,
                 AppointmentId = review.AppointmentId,
                 PartId = review.PartId,
+                PartRequestId = review.PartRequestId,
                 Rating = review.Rating,
                 Comment = review.Comment,
                 ReviewDate = review.ReviewDate
@@ -174,6 +194,7 @@ namespace VehicleManagementSystem.Controllers
                     VendorId = r.VendorId,
                     AppointmentId = r.AppointmentId,
                     PartId = r.PartId,
+                    PartRequestId = r.PartRequestId,
                     Rating = r.Rating,
                     Comment = r.Comment,
                     ReviewDate = r.ReviewDate
@@ -196,6 +217,7 @@ namespace VehicleManagementSystem.Controllers
                     VendorId = r.VendorId,
                     AppointmentId = r.AppointmentId,
                     PartId = r.PartId,
+                    PartRequestId = r.PartRequestId,
                     Rating = r.Rating,
                     Comment = r.Comment,
                     ReviewDate = r.ReviewDate
@@ -218,6 +240,7 @@ namespace VehicleManagementSystem.Controllers
                     VendorId = r.VendorId,
                     AppointmentId = r.AppointmentId,
                     PartId = r.PartId,
+                    PartRequestId = r.PartRequestId,
                     Rating = r.Rating,
                     Comment = r.Comment,
                     ReviewDate = r.ReviewDate
@@ -240,6 +263,30 @@ namespace VehicleManagementSystem.Controllers
                     VendorId = r.VendorId,
                     AppointmentId = r.AppointmentId,
                     PartId = r.PartId,
+                    PartRequestId = r.PartRequestId,
+                    Rating = r.Rating,
+                    Comment = r.Comment,
+                    ReviewDate = r.ReviewDate
+                })
+                .ToListAsync();
+
+            return Ok(reviews);
+        }
+
+        [HttpGet("part-request/{partRequestId}")]
+        public async Task<IActionResult> GetReviewsByPartRequest(Guid partRequestId)
+        {
+            var reviews = await dbContext.Reviews
+                .Where(r => r.PartRequestId == partRequestId)
+                .OrderByDescending(r => r.ReviewDate)
+                .Select(r => new ReviewResponseDto
+                {
+                    ReviewId = r.ReviewId,
+                    CustomerId = r.CustomerId,
+                    VendorId = r.VendorId,
+                    AppointmentId = r.AppointmentId,
+                    PartId = r.PartId,
+                    PartRequestId = r.PartRequestId,
                     Rating = r.Rating,
                     Comment = r.Comment,
                     ReviewDate = r.ReviewDate
