@@ -14,5 +14,28 @@ namespace VehicleManagementSystem.Services.Interfaces
         Task<(bool Success, string Message)> UpdateVendorAsync(Guid id, VendorModel model);
         Task<(bool Success, string Message)> DeleteVendorAsync(Guid id);
 
+
+        Task<(bool Success, string Message, VendorAssignmentDto? Assignment)>
+            AssignVendorToPartRequestAsync(AssignVendorToPartRequestModel model, string assignedByUserId);
+
+        Task<(bool Success, string Message, VendorAssignmentDto? Assignment)>
+            AssignVendorToAppointmentAsync(AssignVendorToAppointmentModel model, string assignedByUserId);
+        Task<IEnumerable<VendorAssignmentDto>> GetAllAssignmentsAsync();
+        Task<IEnumerable<VendorAssignmentDto>> GetAssignmentsByPartRequestAsync(Guid partRequestId);
+        Task<IEnumerable<VendorAssignmentDto>> GetAssignmentsByAppointmentAsync(Guid appointmentId);
+        Task<VendorAssignmentDto?> GetAssignmentByIdAsync(Guid assignmentId);
+
+        Task<(bool Success, string Message)> DeleteAssignmentAsync(Guid assignmentId);
+        Task<IEnumerable<VendorAssignmentDto>> GetMyAssignmentsAsync(Guid vendorId);
+        Task<VendorAssignmentDto?> GetMyAssignmentByIdAsync(Guid assignmentId, Guid vendorId);
+        Task<(bool Success, string Message, VendorAssignmentDto? Assignment)>
+         RespondToAssignmentAsync(Guid assignmentId, Guid vendorId, VendorRespondModel model);
+        Task<(bool Success, string Message, VendorInvoiceDto? Invoice)>
+         GenerateInvoiceAsync(Guid assignmentId, Guid vendorId, CreateVendorInvoiceModel model);
+
+        Task<IEnumerable<VendorInvoiceDto>> GetMyInvoicesAsync(Guid vendorId);
+        Task<VendorInvoiceDto?> GetMyInvoiceByIdAsync(Guid invoiceId, Guid vendorId);
+
+
     }
 }
