@@ -5,6 +5,7 @@ using VehicleManagementSystem.Data;
 using VehicleManagementSystem.Entities;
 using VehicleManagementSystem.Services;
 using VehicleManagementSystem.Services.Implementations;
+using VehicleManagementSystem.Services.Implementations;
 using VehicleManagementSystem.Services.Interfaces;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -44,7 +45,9 @@ builder.Services.AddScoped<IInvoiceService, InvoiceService>();
 builder.Services.AddScoped<IInventoryService, InventoryService>();
 builder.Services.AddScoped<IVehicleService, VehicleService>();
 builder.Services.AddScoped<ISaleService, SaleService>();
-builder.Services.AddScoped<IEmailService,EmailService>();
+builder.Services.AddScoped<IFinancialReportService, FinancialReportService>();
+builder.Services.AddScoped<ICustomerReportService, CustomerReportService>();
+
 
 var app = builder.Build();
 
