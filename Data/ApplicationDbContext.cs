@@ -17,12 +17,16 @@ namespace VehicleManagementSystem.Data
         public DbSet<Vehicle> Vehicles { get; set; }
         public DbSet<Parts> Parts { get; set; }
         public DbSet<Vendor> Vendors { get; set; }
-        public DbSet<User> User{ get; set; }
+        public DbSet<User> User { get; set; }
         public DbSet<Sale> Sales { get; set; }
         public DbSet<SaleItem> SaleItems { get; set; }
         public DbSet<Invoice> Invoices { get; set; }
         public DbSet<PurchaseInvoice> PurchaseInvoices { get; set; }
         public DbSet<PurchaseInvoiceItem> PurchaseInvoiceItems { get; set; }
-
+        public DbSet<VendorAssignment> VendorAssignments { get; set; }
+        public DbSet<VendorInvoice> VendorInvoices { get; set; }
+        public DbSet<VendorInvoiceItem> VendorInvoiceItems { get; set; }
     }
 }
+
+    

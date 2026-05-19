@@ -6,7 +6,7 @@ namespace VehicleManagementSystem.Data
     {
         public static async Task SeedRoles(RoleManager<IdentityRole> roleManager)
         {
-            string[] roles = ["Customer", "Staff", "Admin"];
+            string[] roles = ["Customer", "Staff", "Admin","Vendor"];
 
             foreach (string r in roles)
             {
