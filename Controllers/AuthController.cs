@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using VehicleManagementSystem.Dtos.Models;
 using VehicleManagementSystem.Entities;
-using VehicleManagementSystem.Models;
 
 namespace VehicleManagementSystem.Controllers
 {

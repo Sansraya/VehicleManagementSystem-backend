@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using VehicleManagementSystem.Dtos;
+using VehicleManagementSystem.Dtos.Models;
 using VehicleManagementSystem.Entities;
-using VehicleManagementSystem.Models;
 using VehicleManagementSystem.Services.Interfaces;
 
 namespace VehicleManagementSystem.Services.Implementations

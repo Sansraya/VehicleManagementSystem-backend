@@ -3,8 +3,8 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Linq;
 using VehicleManagementSystem.Data;
+using VehicleManagementSystem.Dtos.Models;
 using VehicleManagementSystem.Entities;
-using VehicleManagementSystem.Models;
 
 namespace VehicleManagementSystem.Controllers;
 

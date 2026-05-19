@@ -1,4 +1,4 @@
-﻿namespace VehicleManagementSystem.Models
+﻿namespace VehicleManagementSystem.Dtos.Models
 {
     public class LoginModel
     {

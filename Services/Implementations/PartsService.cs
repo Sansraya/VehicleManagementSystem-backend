@@ -1,8 +1,8 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using VehicleManagementSystem.Data;
 using VehicleManagementSystem.Dtos;
+using VehicleManagementSystem.Dtos.Models;
 using VehicleManagementSystem.Entities;
-using VehicleManagementSystem.Models;
 using VehicleManagementSystem.Services.Interfaces;
 
 namespace VehicleManagementSystem.Services.Implementations

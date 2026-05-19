@@ -15,4 +15,6 @@ public interface ISaleService
 
     Task<(bool Success, string Message, List<SaleResponseDto> Invoices)> GetInvoicesByCustomer(
         string customerId);
+    Task<(bool Success, string Message)> SendInvoiceEmailAsync(Guid saleId, IEmailService emailService);
+
 }
