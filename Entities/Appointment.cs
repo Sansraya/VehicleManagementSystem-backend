@@ -1,6 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using VehicleManagementSystem.Entities;
 
 namespace VehicleManagementSystem.Entities
 {
@@ -11,8 +10,10 @@ namespace VehicleManagementSystem.Entities
 
         [ForeignKey("Customer")]
         public string CustomerId { get; set; } = string.Empty;
-
         public User? Customer { get; set; }
+
+        public string? StaffId { get; set; }
+        public User? Staff { get; set; }
 
         public DateTime AppointmentDate { get; set; }
 

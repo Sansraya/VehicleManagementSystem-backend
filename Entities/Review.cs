@@ -1,6 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using VehicleManagementSystem.Entities;
 
 namespace VehicleManagementSystem.Entities
 {
@@ -13,6 +12,14 @@ namespace VehicleManagementSystem.Entities
         public string CustomerId { get; set; } = string.Empty;
 
         public User? Customer { get; set; }
+
+        public Guid? AppointmentId { get; set; }
+
+        public Appointment? Appointment { get; set; }
+
+        public Guid? PartId { get; set; }
+
+        public Parts? Part { get; set; }
 
         public int Rating { get; set; }
 
