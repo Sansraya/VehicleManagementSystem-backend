@@ -27,13 +27,20 @@ namespace VehicleManagementSystem.Services.Implementations
 
             var user = new User
             {
-                UserName = model.Username,
+                UserName = model.Email,
                 Email = model.Email,
                 FirstName = model.FirstName,
                 LastName = model.LastName,
                 PhoneNumber = model.Phone,
                 EmailConfirmed = true
             };
+
+            var userResult = await userManager.CreateAsync(user, model.Password);
+            if (!userResult.Succeeded)
+            {
+                var errors = string.Join("; ", userResult.Errors.Select(e => e.Description));
+                return (false, $"Vendor user creation failed: {errors}", null);
+            }
 
             var vendor = new Vendor
             {
@@ -42,7 +49,9 @@ namespace VehicleManagementSystem.Services.Implementations
                 Email = model.Email,
                 Phone = model.Phone ?? "",
                 Address = model.Address ?? "",
+                ContactPerson = model.ContactPerson ?? "",
                 CreatedAt = DateTime.UtcNow
+                
             };
 
             await dbContext.Vendors.AddAsync(vendor);
@@ -53,16 +62,21 @@ namespace VehicleManagementSystem.Services.Implementations
         public async Task<IEnumerable<VendorDto>> GetAllVendorsAsync()
         {
             return await dbContext.Vendors
-                .Select(v => new VendorDto
-                {
-                    VendorId = v.VendorId,
-                    Name = v.Name,
-                    ContactPerson = v.ContactPerson,
-                    Email = v.Email,
-                    Phone = v.Phone,
-                    Address = v.Address,
-                    CreatedAt = v.CreatedAt
-                })
+                .Join(dbContext.Users,
+                    v => v.Email,
+                    u => u.Email,
+                    (v, u) => new VendorDto
+                    {
+                        VendorId = v.VendorId,
+                        Username = v.Name,
+                        FirstName = u.FirstName,
+                        LastName = u.LastName,
+                        ContactPerson = v.ContactPerson,
+                        Email = v.Email,
+                        Phone = v.Phone,
+                        Address = v.Address,
+                        CreatedAt = v.CreatedAt
+                    })
                 .ToListAsync();
         }
 
@@ -74,7 +88,7 @@ namespace VehicleManagementSystem.Services.Implementations
             return new VendorDto
             {
                 VendorId = vendor.VendorId,
-                Name = vendor.Name,
+                Username = vendor.Name,
                 ContactPerson = vendor.ContactPerson,
                 Email = vendor.Email,
                 Phone = vendor.Phone,
