@@ -54,13 +54,14 @@ namespace VehicleManagementSystem.Controllers
                 var appointmentExists = await dbContext.Appointments
                     .AnyAsync(a =>
                         a.AppointmentId == dto.AppointmentId &&
-                        a.CustomerId == dto.CustomerId);
+                        a.CustomerId == dto.CustomerId &&
+                        a.VendorId == dto.VendorId);
 
                 if (!appointmentExists)
                 {
                     return BadRequest(new
                     {
-                        message = "Invalid appointment for this customer."
+                        message = "Invalid vendor-related appointment for this customer."
                     });
                 }
             }

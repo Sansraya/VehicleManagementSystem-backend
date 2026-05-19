@@ -37,10 +37,21 @@ namespace VehicleManagementSystem.Controllers
                 }
             }
 
+            if (dto.VendorId != null)
+            {
+                var vendorExists = await dbContext.Vendors.AnyAsync(v => v.VendorId == dto.VendorId);
+
+                if (!vendorExists)
+                {
+                    return BadRequest(new { message = "Invalid vendor ID." });
+                }
+            }
+
             var appointment = new Appointment
             {
                 CustomerId = dto.CustomerId,
                 StaffId = dto.StaffId,
+                VendorId = dto.VendorId,
                 AppointmentDate = dto.AppointmentDate.ToUniversalTime(),
                 ServiceType = dto.ServiceType,
                 Description = dto.Description
@@ -54,6 +65,7 @@ namespace VehicleManagementSystem.Controllers
                 AppointmentId = appointment.AppointmentId,
                 CustomerId = appointment.CustomerId,
                 StaffId = appointment.StaffId,
+                VendorId = appointment.VendorId,
                 AppointmentDate = appointment.AppointmentDate,
                 ServiceType = appointment.ServiceType,
                 Description = appointment.Description
@@ -73,6 +85,7 @@ namespace VehicleManagementSystem.Controllers
                     AppointmentId = a.AppointmentId,
                     CustomerId = a.CustomerId,
                     StaffId = a.StaffId,
+                    VendorId = a.VendorId,
                     AppointmentDate = a.AppointmentDate,
                     ServiceType = a.ServiceType,
                     Description = a.Description
@@ -93,6 +106,28 @@ namespace VehicleManagementSystem.Controllers
                     AppointmentId = a.AppointmentId,
                     CustomerId = a.CustomerId,
                     StaffId = a.StaffId,
+                    VendorId = a.VendorId,
+                    AppointmentDate = a.AppointmentDate,
+                    ServiceType = a.ServiceType,
+                    Description = a.Description
+                })
+                .ToListAsync();
+
+            return Ok(appointments);
+        }
+
+        [HttpGet("vendor/{vendorId}")]
+        public async Task<IActionResult> GetAppointmentsByVendor(Guid vendorId)
+        {
+            var appointments = await dbContext.Appointments
+                .Where(a => a.VendorId == vendorId)
+                .OrderByDescending(a => a.AppointmentDate)
+                .Select(a => new AppointmentResponseDto
+                {
+                    AppointmentId = a.AppointmentId,
+                    CustomerId = a.CustomerId,
+                    StaffId = a.StaffId,
+                    VendorId = a.VendorId,
                     AppointmentDate = a.AppointmentDate,
                     ServiceType = a.ServiceType,
                     Description = a.Description
