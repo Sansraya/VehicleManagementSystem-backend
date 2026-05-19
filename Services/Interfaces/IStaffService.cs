@@ -1,5 +1,5 @@
 ﻿using VehicleManagementSystem.Dtos;
-using VehicleManagementSystem.Models;
+using VehicleManagementSystem.Dtos.Models;
 
 namespace VehicleManagementSystem.Services.Interfaces
 {

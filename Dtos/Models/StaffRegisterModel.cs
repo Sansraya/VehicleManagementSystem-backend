@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace VehicleManagementSystem.Models
+namespace VehicleManagementSystem.Dtos.Models
 {
     public class StaffRegisterModel
     {

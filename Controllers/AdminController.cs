@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using VehicleManagementSystem.Dtos;
-using VehicleManagementSystem.Models;
+using VehicleManagementSystem.Dtos.Models;
 using VehicleManagementSystem.Services.Interfaces;
 
 namespace VehicleManagementSystem.Controllers

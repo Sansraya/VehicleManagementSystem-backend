@@ -6,10 +6,11 @@ public class CreateVehicleDto
     public string Model { get; set; } = string.Empty;
     public string VehicleNumber { get; set; } = string.Empty;
     public string Colour { get; set; } = string.Empty;
-    public DateOnly ManufacturingYear { get; set; }
+    public string ManufacturingYear { get; set; } = string.Empty;
     public string FuelType { get; set; } = string.Empty;
     public double Price { get; set; }
     public bool IsAvailable { get; set; } = true;
+    public string? OwnerId { get; set; }
 }
 
 public class UpdateVehicleDto
@@ -20,6 +21,7 @@ public class UpdateVehicleDto
     public string? FuelType { get; set; }
     public double? Price { get; set; }
     public bool? IsAvailable { get; set; }
+    public string? OwnerId { get; set; }
 }
 
 public class VehicleResponseDto
@@ -29,8 +31,10 @@ public class VehicleResponseDto
     public string Model { get; set; } = string.Empty;
     public string VehicleNumber { get; set; } = string.Empty;
     public string Colour { get; set; } = string.Empty;
-    public DateOnly ManufacturingYear { get; set; }
+    public string ManufacturingYear { get; set; } = string.Empty;
     public string FuelType { get; set; } = string.Empty;
     public double Price { get; set; }
     public bool IsAvailable { get; set; }
+    public string? OwnerId { get; set; }
+    public string? OwnerName { get; set; }
 }
