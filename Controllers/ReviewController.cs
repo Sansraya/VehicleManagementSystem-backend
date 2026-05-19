@@ -111,6 +111,56 @@ namespace VehicleManagementSystem.Controllers
             return Ok(response);
         }
 
+        [HttpGet("review-options/{customerId}")]
+        public async Task<IActionResult> GetReviewOptions(string customerId)
+        {
+            var customerExists = await dbContext.Users
+                .AnyAsync(u => u.Id == customerId);
+
+            if (!customerExists)
+            {
+                return BadRequest(new { message = "Invalid customer ID." });
+            }
+
+            var appointments = await dbContext.Appointments
+                .Where(a => a.CustomerId == customerId)
+                .Select(a => new ReviewOptionResponseDto
+                {
+                    Id = a.AppointmentId,
+                    VendorId = a.VendorId,
+                    Type = "Appointment",
+                    Title = a.ServiceType,
+                    Description = a.Description,
+                    Date = a.AppointmentDate,
+                    Status = "Booked"
+                })
+                .ToListAsync();
+
+            var partRequests = await dbContext.PartRequests
+                .Where(p => p.CustomerId == customerId)
+                .Select(p => new ReviewOptionResponseDto
+                {
+                    Id = p.PartRequestId,
+                    VendorId = dbContext.VendorAssignments
+                        .Where(v => v.PartRequestId == p.PartRequestId)
+                        .Select(v => (Guid?)v.VendorId)
+                        .FirstOrDefault(),
+                    Type = "Part Request",
+                    Title = p.PartName,
+                    Description = p.Description,
+                    Date = p.RequestDate,
+                    Status = "Requested"
+                })
+                .ToListAsync();
+
+            var reviewOptions = appointments
+                .Concat(partRequests)
+                .OrderByDescending(x => x.Date)
+                .ToList();
+
+            return Ok(reviewOptions);
+        }
+
         [HttpGet("customer/{customerId}")]
         public async Task<IActionResult> GetReviewsByCustomer(string customerId)
         {
