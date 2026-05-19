@@ -7,5 +7,6 @@
             DateTime saleDate, string paymentMethod, decimal totalAmount,
             decimal discountAmount, decimal finalAmount,
             IEnumerable<(string itemName, int qty, double unitPrice, double lineTotal)> items);
+        Task SendCreditReminderEmailAsync(string toEmail, string toName, string invoiceNumber, DateTime saleDate, decimal amountDue, int daysOverdue);
     }
 }
