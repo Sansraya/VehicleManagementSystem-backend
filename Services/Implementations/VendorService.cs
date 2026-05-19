@@ -42,6 +42,8 @@ namespace VehicleManagementSystem.Services.Implementations
                 return (false, $"Vendor user creation failed: {errors}", null);
             }
 
+            await userManager.AddToRoleAsync(user, "Vendor");
+
             var vendor = new Vendor
             {
                 VendorId = Guid.NewGuid(),

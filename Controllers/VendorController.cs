@@ -1,9 +1,10 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using VehicleManagementSystem.Data;
 using VehicleManagementSystem.Dtos;
-using VehicleManagementSystem.Entities;
 using VehicleManagementSystem.Dtos.Models;
+using VehicleManagementSystem.Entities;
 using VehicleManagementSystem.Services.Implementations;
 using VehicleManagementSystem.Services.Interfaces;
 
@@ -17,10 +18,11 @@ namespace VehicleManagementSystem.Controllers
         private readonly IVendorService vendorService;
         private readonly UserManager<User> userManager;
 
-        public VendorController(ApplicationDbContext dbContext, IVendorService vendorService)
+        public VendorController(ApplicationDbContext dbContext, IVendorService vendorService,UserManager<User> userManager)
         {
             this.dbContext = dbContext;
             this.vendorService = vendorService;
+            this.userManager = userManager;
         }
 
         [HttpPost("AddPartByVendor")]
@@ -149,13 +151,15 @@ namespace VehicleManagementSystem.Controllers
 
 
 
-        private async Task<Guid?> ResolveVendorIdAsync(string vendorUserId)
+        private async Task<Guid?> ResolveVendorIdAsync(string email)
         {
-            var user = await dbContext.Vendors.FindAsync(vendorUserId);
-            return user?.VendorId;
+
+            var vendor = await dbContext.Vendors
+                .FirstOrDefaultAsync(v => v.Email == email);
+            return vendor?.VendorId;
         }
 
-        
+
         [HttpGet("assignments")]
         public async Task<IActionResult> GetMyAssignments([FromQuery] string vendorUserId)
         {
@@ -166,7 +170,17 @@ namespace VehicleManagementSystem.Controllers
             return Ok(result);
         }
 
-        
+        [HttpGet("getVendorById")]
+        public async Task<IActionResult> GetMyVendorId([FromQuery] string email)
+        {
+            var vendor = await dbContext.Vendors
+                .FirstOrDefaultAsync(v => v.Email == email);
+
+            if (vendor == null) return NotFound(new { message = "Vendor not found." });
+
+            return Ok(new { vendorId = vendor.VendorId });
+        }
+
         [HttpGet("assignments/{assignmentId:guid}")]
         public async Task<IActionResult> GetAssignment(Guid assignmentId, [FromQuery] string vendorUserId)
         {

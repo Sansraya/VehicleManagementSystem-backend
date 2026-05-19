@@ -39,7 +39,9 @@ namespace VehicleManagementSystem.Controllers
                 userName = user.UserName,
                 firstName = user.FirstName,
                 lastName = user.LastName,
-                role = role
+                role = role,
+                
+                
             });
         }
     }
