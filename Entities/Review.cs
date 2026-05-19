@@ -10,15 +10,15 @@ namespace VehicleManagementSystem.Entities
 
         [ForeignKey("Customer")]
         public string CustomerId { get; set; } = string.Empty;
-
         public User? Customer { get; set; }
 
-        public Guid? AppointmentId { get; set; }
+        public Guid VendorId { get; set; }
+        public Vendor? Vendor { get; set; }
 
+        public Guid? AppointmentId { get; set; }
         public Appointment? Appointment { get; set; }
 
         public Guid? PartId { get; set; }
-
         public Parts? Part { get; set; }
 
         public int Rating { get; set; }

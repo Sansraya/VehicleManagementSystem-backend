@@ -4,6 +4,8 @@
     {
         public string CustomerId { get; set; } = string.Empty;
 
+        public Guid VendorId { get; set; }
+
         public Guid? AppointmentId { get; set; }
 
         public Guid? PartId { get; set; }

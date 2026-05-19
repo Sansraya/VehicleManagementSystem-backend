@@ -33,11 +33,19 @@ namespace VehicleManagementSystem.Controllers
                 return BadRequest(new { message = "Invalid customer ID." });
             }
 
+            var vendorExists = await dbContext.Vendors
+                .AnyAsync(v => v.VendorId == dto.VendorId);
+
+            if (!vendorExists)
+            {
+                return BadRequest(new { message = "Invalid vendor ID." });
+            }
+
             if (dto.AppointmentId == null && dto.PartId == null)
             {
                 return BadRequest(new
                 {
-                    message = "Review must be linked to either an appointment or a part."
+                    message = "Review must be linked to either a vendor-related appointment or a vendor-related part."
                 });
             }
 
@@ -60,17 +68,23 @@ namespace VehicleManagementSystem.Controllers
             if (dto.PartId != null)
             {
                 var partExists = await dbContext.Parts
-                    .AnyAsync(p => p.PartsId == dto.PartId);
+                    .AnyAsync(p =>
+                        p.PartsId == dto.PartId &&
+                        p.VendorId == dto.VendorId);
 
                 if (!partExists)
                 {
-                    return BadRequest(new { message = "Invalid part ID." });
+                    return BadRequest(new
+                    {
+                        message = "Invalid part ID for this vendor."
+                    });
                 }
             }
 
             var review = new Review
             {
                 CustomerId = dto.CustomerId,
+                VendorId = dto.VendorId,
                 AppointmentId = dto.AppointmentId,
                 PartId = dto.PartId,
                 Rating = dto.Rating,
@@ -85,6 +99,7 @@ namespace VehicleManagementSystem.Controllers
             {
                 ReviewId = review.ReviewId,
                 CustomerId = review.CustomerId,
+                VendorId = review.VendorId,
                 AppointmentId = review.AppointmentId,
                 PartId = review.PartId,
                 Rating = review.Rating,
@@ -96,7 +111,7 @@ namespace VehicleManagementSystem.Controllers
         }
 
         [HttpGet("customer/{customerId}")]
-        public async Task<IActionResult> GetReviews(string customerId)
+        public async Task<IActionResult> GetReviewsByCustomer(string customerId)
         {
             var reviews = await dbContext.Reviews
                 .Where(r => r.CustomerId == customerId)
@@ -105,6 +120,29 @@ namespace VehicleManagementSystem.Controllers
                 {
                     ReviewId = r.ReviewId,
                     CustomerId = r.CustomerId,
+                    VendorId = r.VendorId,
+                    AppointmentId = r.AppointmentId,
+                    PartId = r.PartId,
+                    Rating = r.Rating,
+                    Comment = r.Comment,
+                    ReviewDate = r.ReviewDate
+                })
+                .ToListAsync();
+
+            return Ok(reviews);
+        }
+
+        [HttpGet("vendor/{vendorId}")]
+        public async Task<IActionResult> GetReviewsByVendor(Guid vendorId)
+        {
+            var reviews = await dbContext.Reviews
+                .Where(r => r.VendorId == vendorId)
+                .OrderByDescending(r => r.ReviewDate)
+                .Select(r => new ReviewResponseDto
+                {
+                    ReviewId = r.ReviewId,
+                    CustomerId = r.CustomerId,
+                    VendorId = r.VendorId,
                     AppointmentId = r.AppointmentId,
                     PartId = r.PartId,
                     Rating = r.Rating,
@@ -126,6 +164,7 @@ namespace VehicleManagementSystem.Controllers
                 {
                     ReviewId = r.ReviewId,
                     CustomerId = r.CustomerId,
+                    VendorId = r.VendorId,
                     AppointmentId = r.AppointmentId,
                     PartId = r.PartId,
                     Rating = r.Rating,
@@ -147,6 +186,7 @@ namespace VehicleManagementSystem.Controllers
                 {
                     ReviewId = r.ReviewId,
                     CustomerId = r.CustomerId,
+                    VendorId = r.VendorId,
                     AppointmentId = r.AppointmentId,
                     PartId = r.PartId,
                     Rating = r.Rating,
