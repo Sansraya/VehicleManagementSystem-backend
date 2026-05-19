@@ -48,6 +48,8 @@ builder.Services.AddScoped<ISaleService, SaleService>();
 builder.Services.AddScoped<IFinancialReportService, FinancialReportService>();
 builder.Services.AddScoped<ICustomerReportService, CustomerReportService>();
 
+builder.Services.AddScoped<IEmailService,EmailService>();
+builder.Services.AddScoped<IPredictionService,PredictionService>();
 
 var app = builder.Build();
 
