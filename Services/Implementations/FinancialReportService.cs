@@ -21,7 +21,7 @@ namespace VehicleManagementSystem.Services.Implementations
             var end = start.AddDays(1).AddTicks(-1);
             var report = await BuildReportAsync(start, end, "Daily");
 
-            // breakdown: hourly buckets for daily view
+            
             var sales = await dbContext.Sales
                 .Where(s => s.SaleDate >= start && s.SaleDate <= end)
                 .ToListAsync();
