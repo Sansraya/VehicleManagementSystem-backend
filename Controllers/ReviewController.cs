@@ -283,7 +283,7 @@ namespace VehicleManagementSystem.Controllers
                 {
                     ReviewId = r.ReviewId,
                     CustomerId = r.CustomerId,
-                    VendorId = r.VendorId,
+                    VendorId = r.VendorId ?? Guid.Empty,
                     AppointmentId = r.AppointmentId,
                     PartId = r.PartId,
                     PartRequestId = r.PartRequestId,

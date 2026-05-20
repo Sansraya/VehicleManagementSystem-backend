@@ -12,7 +12,7 @@ namespace VehicleManagementSystem.Entities
         public string CustomerId { get; set; } = string.Empty;
         public User? Customer { get; set; }
 
-        public Guid VendorId { get; set; }
+        public Guid? VendorId { get; set; }
         public Vendor? Vendor { get; set; }
 
         public Guid? AppointmentId { get; set; }
