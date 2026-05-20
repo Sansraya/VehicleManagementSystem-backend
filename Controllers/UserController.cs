@@ -1,7 +1,6 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using System.Linq;
 using VehicleManagementSystem.Data;
 using VehicleManagementSystem.Dtos.Models;
 using VehicleManagementSystem.Entities;
@@ -26,7 +25,6 @@ public class CustomerController : ControllerBase
         this.signInManager = signInManager;
     }
 
-   
     [HttpPost("register")]
     public async Task<IActionResult> Register([FromForm] RegisterModel model)
     {
@@ -59,19 +57,16 @@ public class CustomerController : ControllerBase
         return Ok(new { message = "Registration successful!" });
     }
 
-   
     [HttpPost("register-with-vehicle")]
     public async Task<IActionResult> RegisterWithVehicle(
         [FromBody] RegisterCustomerWithVehicleModel model)
     {
-  
         if (await userManager.FindByNameAsync(model.Username) != null)
             return BadRequest(new { message = "Username already exists." });
 
         if (await userManager.FindByEmailAsync(model.Email) != null)
             return BadRequest(new { message = "Email already registered." });
 
-        
         if (model.Vehicle is not null)
         {
             var plateExists = await dbContext.Vehicles
@@ -84,7 +79,6 @@ public class CustomerController : ControllerBase
                 });
         }
 
-        
         var customer = new User
         {
             UserName = model.Username,
@@ -108,7 +102,6 @@ public class CustomerController : ControllerBase
 
         await userManager.AddToRoleAsync(customer, "Customer");
 
-        
         Guid? vehicleId = null;
         if (model.Vehicle is not null)
         {
@@ -122,7 +115,7 @@ public class CustomerController : ControllerBase
                 ManufacturingYear = model.Vehicle.ManufacturingYear,
                 FuelType = model.Vehicle.FuelType,
                 Price = model.Vehicle.Price,
-                IsAvailable = false,   
+                IsAvailable = false,
                 OwnerId = customer.Id,
             };
 
@@ -158,7 +151,6 @@ public class CustomerController : ControllerBase
                     message = $"A vehicle with plate '{model.Vehicle.VehicleNumber}' already exists."
                 });
         }
-
 
         Guid? vehicleId = null;
         if (model.Vehicle is not null)
@@ -198,7 +190,6 @@ public class CustomerController : ControllerBase
     {
         var customers = await userManager.GetUsersInRoleAsync("Customer");
 
-        
         var customerIds = customers.Select(c => c.Id).ToList();
         var vehicles = await dbContext.Vehicles
             .Where(v => v.OwnerId != null && customerIds.Contains(v.OwnerId!))
@@ -234,4 +225,68 @@ public class CustomerController : ControllerBase
 
         return Ok(result);
     }
+    
+    [HttpPut("{id}")]
+    public async Task<IActionResult> UpdateCustomer(string id, [FromBody] UpdateCustomerModel model)
+    {
+        var user = await userManager.FindByIdAsync(id);
+        if (user == null || !await userManager.IsInRoleAsync(user, "Customer"))
+            return NotFound(new { message = "Customer not found." });
+
+        user.FirstName = model.FirstName ?? user.FirstName;
+        user.LastName = model.LastName ?? user.LastName;
+        user.PhoneNumber = model.Phone ?? user.PhoneNumber;
+        user.Address = model.Address ?? user.Address;
+
+        var result = await userManager.UpdateAsync(user);
+        if (!result.Succeeded)
+        {
+            var errors = string.Join("; ", result.Errors.Select(e => e.Description));
+            return BadRequest(new { message = errors });
+        }
+
+        return Ok(new { message = "Customer updated successfully." });
+    }
+    
+    [HttpDelete("{id}")]
+    public async Task<IActionResult> DeleteCustomer(string id)
+    {
+        var user = await userManager.FindByIdAsync(id);
+        if (user == null || !await userManager.IsInRoleAsync(user, "Customer"))
+            return NotFound(new { message = "Customer not found." });
+        
+        var hasSales = await dbContext.Sales.AnyAsync(s => s.CustomerId == id);
+        if (hasSales)
+            return Conflict(new
+            {
+                message = "Cannot delete customer with existing sales records. Consider deactivating instead."
+            });
+        
+        var vehicles = await dbContext.Vehicles.Where(v => v.OwnerId == id).ToListAsync();
+        foreach (var vehicle in vehicles)
+        {
+            var vehicleHasSales = await dbContext.SaleItems.AnyAsync(si => si.VehicleId == vehicle.VehicleId);
+            if (!vehicleHasSales)
+                dbContext.Vehicles.Remove(vehicle);
+        }
+
+        await dbContext.SaveChangesAsync();
+
+        var deleteResult = await userManager.DeleteAsync(user);
+        if (!deleteResult.Succeeded)
+        {
+            var errors = string.Join("; ", deleteResult.Errors.Select(e => e.Description));
+            return BadRequest(new { message = errors });
+        }
+
+        return Ok(new { message = "Customer deleted successfully." });
+    }
+}
+
+public class UpdateCustomerModel
+{
+    public string? FirstName { get; set; }
+    public string? LastName { get; set; }
+    public string? Phone { get; set; }
+    public string? Address { get; set; }
 }
