@@ -47,6 +47,7 @@ builder.Services.AddScoped<ISaleService, SaleService>();
 builder.Services.AddScoped<IEmailService,EmailService>();
 builder.Services.AddScoped<IPredictionService,PredictionService>();
 builder.Services.AddHostedService<CreditReminderService>();
+builder.Services.AddScoped<IAdminRecommendationService, AdminRecommendationService>();
 
 var app = builder.Build();
 

@@ -179,7 +179,7 @@ namespace VehicleManagementSystem.Migrations
 
                     b.HasIndex("CustomerId");
 
-                    b.ToTable("Appointments");
+                    b.ToTable("Appointments", (string)null);
                 });
 
             modelBuilder.Entity("VehicleManagementSystem.Entities.Invoice", b =>
@@ -213,7 +213,7 @@ namespace VehicleManagementSystem.Migrations
                     b.HasIndex("SaleId")
                         .IsUnique();
 
-                    b.ToTable("Invoices");
+                    b.ToTable("Invoices", (string)null);
                 });
 
             modelBuilder.Entity("VehicleManagementSystem.Entities.PartRequest", b =>
@@ -241,7 +241,7 @@ namespace VehicleManagementSystem.Migrations
 
                     b.HasIndex("CustomerId");
 
-                    b.ToTable("PartRequests");
+                    b.ToTable("PartRequests", (string)null);
                 });
 
             modelBuilder.Entity("VehicleManagementSystem.Entities.Parts", b =>
@@ -284,7 +284,7 @@ namespace VehicleManagementSystem.Migrations
 
                     b.HasIndex("VendorId");
 
-                    b.ToTable("Parts");
+                    b.ToTable("Parts", (string)null);
                 });
 
             modelBuilder.Entity("VehicleManagementSystem.Entities.PurchaseInvoice", b =>
@@ -320,7 +320,7 @@ namespace VehicleManagementSystem.Migrations
 
                     b.HasIndex("VendorId");
 
-                    b.ToTable("PurchaseInvoices");
+                    b.ToTable("PurchaseInvoices", (string)null);
                 });
 
             modelBuilder.Entity("VehicleManagementSystem.Entities.PurchaseInvoiceItem", b =>
@@ -347,7 +347,7 @@ namespace VehicleManagementSystem.Migrations
 
                     b.HasIndex("PurchaseInvoiceId");
 
-                    b.ToTable("PurchaseInvoiceItems");
+                    b.ToTable("PurchaseInvoiceItems", (string)null);
                 });
 
             modelBuilder.Entity("VehicleManagementSystem.Entities.Review", b =>
@@ -374,7 +374,7 @@ namespace VehicleManagementSystem.Migrations
 
                     b.HasIndex("CustomerId");
 
-                    b.ToTable("Reviews");
+                    b.ToTable("Reviews", (string)null);
                 });
 
             modelBuilder.Entity("VehicleManagementSystem.Entities.Sale", b =>
@@ -420,7 +420,7 @@ namespace VehicleManagementSystem.Migrations
 
                     b.HasIndex("StaffId");
 
-                    b.ToTable("Sales");
+                    b.ToTable("Sales", (string)null);
                 });
 
             modelBuilder.Entity("VehicleManagementSystem.Entities.SaleItem", b =>
@@ -463,7 +463,7 @@ namespace VehicleManagementSystem.Migrations
 
                     b.HasIndex("VehicleId");
 
-                    b.ToTable("SaleItems");
+                    b.ToTable("SaleItems", (string)null);
                 });
 
             modelBuilder.Entity("VehicleManagementSystem.Entities.User", b =>
@@ -584,7 +584,7 @@ namespace VehicleManagementSystem.Migrations
 
                     b.HasIndex("OwnerId");
 
-                    b.ToTable("Vehicles");
+                    b.ToTable("Vehicles", (string)null);
                 });
 
             modelBuilder.Entity("VehicleManagementSystem.Entities.Vendor", b =>
@@ -618,7 +618,7 @@ namespace VehicleManagementSystem.Migrations
 
                     b.HasKey("VendorId");
 
-                    b.ToTable("Vendors");
+                    b.ToTable("Vendors", (string)null);
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>

@@ -8,7 +8,7 @@ namespace VehicleManagementSystem.Data
         public static async Task SeedAdmin(UserManager<User> userManager)
         {
             const string adminUsername = "admin";
-            const string adminEmail = "admin@gmaill.com";
+            const string adminEmail = "admin@gmail.com";
             const string adminPassword = "Admin@123";
 
             var existing = await userManager.FindByNameAsync(adminUsername);
