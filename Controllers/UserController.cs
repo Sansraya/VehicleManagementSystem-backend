@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Linq;
 using VehicleManagementSystem.Data;
+using VehicleManagementSystem.Dtos;
 using VehicleManagementSystem.Dtos.Models;
 using VehicleManagementSystem.Entities;
 
@@ -26,7 +27,7 @@ public class CustomerController : ControllerBase
         this.signInManager = signInManager;
     }
 
-   
+
     [HttpPost("register")]
     public async Task<IActionResult> Register([FromForm] RegisterModel model)
     {
@@ -59,19 +60,19 @@ public class CustomerController : ControllerBase
         return Ok(new { message = "Registration successful!" });
     }
 
-   
+
     [HttpPost("register-with-vehicle")]
     public async Task<IActionResult> RegisterWithVehicle(
         [FromBody] RegisterCustomerWithVehicleModel model)
     {
-  
+
         if (await userManager.FindByNameAsync(model.Username) != null)
             return BadRequest(new { message = "Username already exists." });
 
         if (await userManager.FindByEmailAsync(model.Email) != null)
             return BadRequest(new { message = "Email already registered." });
 
-        
+
         if (model.Vehicle is not null)
         {
             var plateExists = await dbContext.Vehicles
@@ -84,7 +85,7 @@ public class CustomerController : ControllerBase
                 });
         }
 
-        
+
         var customer = new User
         {
             UserName = model.Username,
@@ -108,7 +109,7 @@ public class CustomerController : ControllerBase
 
         await userManager.AddToRoleAsync(customer, "Customer");
 
-        
+
         Guid? vehicleId = null;
         if (model.Vehicle is not null)
         {
@@ -122,7 +123,7 @@ public class CustomerController : ControllerBase
                 ManufacturingYear = model.Vehicle.ManufacturingYear,
                 FuelType = model.Vehicle.FuelType,
                 Price = model.Vehicle.Price,
-                IsAvailable = false,   
+                IsAvailable = false,
                 OwnerId = customer.Id,
             };
 
@@ -198,7 +199,7 @@ public class CustomerController : ControllerBase
     {
         var customers = await userManager.GetUsersInRoleAsync("Customer");
 
-        
+
         var customerIds = customers.Select(c => c.Id).ToList();
         var vehicles = await dbContext.Vehicles
             .Where(v => v.OwnerId != null && customerIds.Contains(v.OwnerId!))
@@ -233,5 +234,153 @@ public class CustomerController : ControllerBase
         });
 
         return Ok(result);
+    }
+
+    [HttpPut("{id}")]
+    public async Task<IActionResult> UpdateCustomer(string id, [FromBody] UpdateCustomerModel model)
+    {
+        var user = await userManager.FindByIdAsync(id);
+        if (user == null)
+            return NotFound(new { message = "Customer not found." });
+
+        var isCustomer = await userManager.IsInRoleAsync(user, "Customer");
+        if (!isCustomer)
+            return BadRequest(new { message = "User is not a customer." });
+
+        
+        user.FirstName = model.FirstName ?? user.FirstName;
+        user.LastName = model.LastName ?? user.LastName;
+        user.PhoneNumber = model.Phone ?? user.PhoneNumber;
+        user.Address = model.Address ?? user.Address;
+
+        var result = await userManager.UpdateAsync(user);
+        if (!result.Succeeded)
+        {
+            var errors = string.Join("; ", result.Errors.Select(e => e.Description));
+            return BadRequest(new { message = errors });
+        }
+
+        return Ok(new { message = "Customer updated successfully." });
+    }
+
+  
+    [HttpDelete("{id}")]
+    public async Task<IActionResult> DeleteCustomer(string id)
+    {
+        var user = await userManager.FindByIdAsync(id);
+        if (user == null)
+            return NotFound(new { message = "Customer not found." });
+
+        var isCustomer = await userManager.IsInRoleAsync(user, "Customer");
+        if (!isCustomer)
+            return BadRequest(new { message = "User is not a customer." });
+
+        
+        var reviews = await dbContext.Reviews.Where(r => r.CustomerId == id).ToListAsync();
+        dbContext.Reviews.RemoveRange(reviews);
+
+        
+        var partRequestIds = await dbContext.PartRequests
+            .Where(p => p.CustomerId == id)
+            .Select(p => p.PartRequestId)
+            .ToListAsync();
+
+        if (partRequestIds.Count > 0)
+        {
+            var prAssignments = await dbContext.VendorAssignments
+                .Where(va => va.PartRequestId != null && partRequestIds.Contains(va.PartRequestId.Value))
+                .ToListAsync();
+
+            // also delete their invoices (if any)
+            var prAssignmentIds = prAssignments.Select(a => a.VendorAssignmentId).ToList();
+            var prInvoices = await dbContext.VendorInvoices
+                .Where(vi => prAssignmentIds.Contains(vi.VendorAssignmentId))
+                .Include(vi => vi.Items)
+                .ToListAsync();
+            foreach (var vi in prInvoices) dbContext.VendorInvoiceItems.RemoveRange(vi.Items);
+            dbContext.VendorInvoices.RemoveRange(prInvoices);
+
+            dbContext.VendorAssignments.RemoveRange(prAssignments);
+
+            var partRequests = await dbContext.PartRequests
+                .Where(p => partRequestIds.Contains(p.PartRequestId))
+                .ToListAsync();
+            dbContext.PartRequests.RemoveRange(partRequests);
+        }
+
+       
+        var appointmentIds = await dbContext.Appointments
+            .Where(a => a.CustomerId == id)
+            .Select(a => a.AppointmentId)
+            .ToListAsync();
+
+        if (appointmentIds.Count > 0)
+        {
+            var apptAssignments = await dbContext.VendorAssignments
+                .Where(va => va.AppointmentId != null && appointmentIds.Contains(va.AppointmentId.Value))
+                .ToListAsync();
+
+            var apptAssignmentIds = apptAssignments.Select(a => a.VendorAssignmentId).ToList();
+            var apptInvoices = await dbContext.VendorInvoices
+                .Where(vi => apptAssignmentIds.Contains(vi.VendorAssignmentId))
+                .Include(vi => vi.Items)
+                .ToListAsync();
+            foreach (var vi in apptInvoices) dbContext.VendorInvoiceItems.RemoveRange(vi.Items);
+            dbContext.VendorInvoices.RemoveRange(apptInvoices);
+
+            dbContext.VendorAssignments.RemoveRange(apptAssignments);
+
+            var appointments = await dbContext.Appointments
+                .Where(a => appointmentIds.Contains(a.AppointmentId))
+                .ToListAsync();
+            dbContext.Appointments.RemoveRange(appointments);
+        }
+
+        
+        var ownedVehicles = await dbContext.Vehicles
+            .Where(v => v.OwnerId == id)
+            .ToListAsync();
+
+        foreach (var v in ownedVehicles)
+        {
+            var wasSold = await dbContext.SaleItems.AnyAsync(si => si.VehicleId == v.VehicleId);
+            if (wasSold)
+                v.OwnerId = null; 
+            else
+                dbContext.Vehicles.Remove(v);
+        }
+
+        
+        var directVendorInvoices = await dbContext.VendorInvoices
+            .Where(vi => vi.CustomerId == id)
+            .Include(vi => vi.Items)
+            .ToListAsync();
+        foreach (var vi in directVendorInvoices) dbContext.VendorInvoiceItems.RemoveRange(vi.Items);
+        dbContext.VendorInvoices.RemoveRange(directVendorInvoices);
+
+        var sales = await dbContext.Sales
+            .Where(s => s.CustomerId == id)
+            .Include(s => s.SaleItems)
+            .Include(s => s.Invoice)
+            .ToListAsync();
+        foreach (var s in sales)
+        {
+            dbContext.SaleItems.RemoveRange(s.SaleItems);
+            if (s.Invoice != null) dbContext.Invoices.Remove(s.Invoice);
+        }
+        dbContext.Sales.RemoveRange(sales);
+
+        
+        await dbContext.SaveChangesAsync();
+
+        
+        var delResult = await userManager.DeleteAsync(user);
+        if (!delResult.Succeeded)
+        {
+            var errors = string.Join("; ", delResult.Errors.Select(e => e.Description));
+            return BadRequest(new { message = $"Customer data removed but account deletion failed: {errors}" });
+        }
+
+        return Ok(new { message = "Customer and all related records removed." });
     }
 }

@@ -53,7 +53,7 @@ namespace VehicleManagementSystem.Services.Implementations
                 Address = model.Address ?? "",
                 ContactPerson = model.ContactPerson ?? "",
                 CreatedAt = DateTime.UtcNow
-                
+
             };
 
             await dbContext.Vendors.AddAsync(vendor);
@@ -99,29 +99,151 @@ namespace VehicleManagementSystem.Services.Implementations
             };
         }
 
+        
         public async Task<(bool Success, string Message)> UpdateVendorAsync(Guid id, VendorModel model)
         {
             var vendor = await dbContext.Vendors.FindAsync(id);
             if (vendor == null) return (false, "Vendor not found");
 
+            
+            var linkedUser = await userManager.FindByEmailAsync(vendor.Email);
+
+            
+            if (!string.Equals(vendor.Email, model.Email, StringComparison.OrdinalIgnoreCase))
+            {
+                var clash = await userManager.FindByEmailAsync(model.Email);
+                if (clash != null && (linkedUser == null || clash.Id != linkedUser.Id))
+                    return (false, "Another user already exists with that email.");
+            }
+
+            
             vendor.Name = model.Username;
-            vendor.ContactPerson = model.Phone;
+            vendor.ContactPerson = model.ContactPerson ?? vendor.ContactPerson;
             vendor.Email = model.Email;
-            vendor.Phone = model.Phone;
-            vendor.Address = model.Address;
+            vendor.Phone = model.Phone ?? vendor.Phone;
+            vendor.Address = model.Address ?? vendor.Address;
+
+           
+            if (linkedUser != null)
+            {
+                if (!string.Equals(linkedUser.Email, model.Email, StringComparison.OrdinalIgnoreCase))
+                {
+                    var setEmail = await userManager.SetEmailAsync(linkedUser, model.Email);
+                    if (!setEmail.Succeeded)
+                    {
+                        var errs = string.Join("; ", setEmail.Errors.Select(e => e.Description));
+                        return (false, $"Failed to update vendor email: {errs}");
+                    }
+
+                    
+                    var setUser = await userManager.SetUserNameAsync(linkedUser, model.Email);
+                    if (!setUser.Succeeded)
+                    {
+                        var errs = string.Join("; ", setUser.Errors.Select(e => e.Description));
+                        return (false, $"Failed to update vendor username: {errs}");
+                    }
+                }
+
+                linkedUser.FirstName = model.FirstName ?? linkedUser.FirstName;
+                linkedUser.LastName = model.LastName ?? linkedUser.LastName;
+                linkedUser.PhoneNumber = model.Phone ?? linkedUser.PhoneNumber;
+
+                var userUpdate = await userManager.UpdateAsync(linkedUser);
+                if (!userUpdate.Succeeded)
+                {
+                    var errs = string.Join("; ", userUpdate.Errors.Select(e => e.Description));
+                    return (false, $"Failed to update vendor user account: {errs}");
+                }
+            }
 
             await dbContext.SaveChangesAsync();
             return (true, "Vendor updated");
         }
 
+        
         public async Task<(bool Success, string Message)> DeleteVendorAsync(Guid id)
         {
             var vendor = await dbContext.Vendors.FindAsync(id);
             if (vendor == null) return (false, "Vendor not found");
 
+          
+            var partsInStock = await dbContext.Parts
+                .Where(p => p.VendorId == id && p.StockQuantity > 0)
+                .CountAsync();
+            if (partsInStock > 0)
+                return (false, $"Cannot delete vendor — {partsInStock} part(s) still in stock. Sell or remove them first.");
+
+            var unpaidPurchases = await dbContext.PurchaseInvoices
+                .Where(pi => pi.VendorId == id && pi.Status == "Pending")
+                .CountAsync();
+            if (unpaidPurchases > 0)
+                return (false, $"Cannot delete vendor — {unpaidPurchases} purchase invoice(s) still pending.");
+
+            
+            var apptsWithVendor = await dbContext.Appointments
+                .Where(a => a.VendorId == id)
+                .ToListAsync();
+            foreach (var a in apptsWithVendor) a.VendorId = null;
+
+            
+            var reviewsWithVendor = await dbContext.Reviews
+                .Where(r => r.VendorId == id)
+                .ToListAsync();
+            foreach (var r in reviewsWithVendor) r.VendorId = null;
+
+            
+            var vendorInvoices = await dbContext.VendorInvoices
+                .Where(vi => vi.VendorId == id)
+                .Include(vi => vi.Items)
+                .ToListAsync();
+            foreach (var vi in vendorInvoices)
+            {
+                dbContext.VendorInvoiceItems.RemoveRange(vi.Items);
+            }
+            dbContext.VendorInvoices.RemoveRange(vendorInvoices);
+
+            var vendorAssignments = await dbContext.VendorAssignments
+                .Where(va => va.VendorId == id)
+                .ToListAsync();
+            dbContext.VendorAssignments.RemoveRange(vendorAssignments);
+
+           
+            var emptyParts = await dbContext.Parts
+                .Where(p => p.VendorId == id)
+                .ToListAsync();
+            dbContext.Parts.RemoveRange(emptyParts);
+
+           
+            var oldPurchases = await dbContext.PurchaseInvoices
+                .Where(pi => pi.VendorId == id)
+                .Include(pi => pi.Items)
+                .ToListAsync();
+            foreach (var pi in oldPurchases)
+            {
+                dbContext.PurchaseInvoiceItems.RemoveRange(pi.Items);
+            }
+            dbContext.PurchaseInvoices.RemoveRange(oldPurchases);
+
+            
             dbContext.Vendors.Remove(vendor);
+
+            
+            var linkedUser = await userManager.FindByEmailAsync(vendor.Email);
+
             await dbContext.SaveChangesAsync();
-            return (true, "Vendor deleted");
+
+            if (linkedUser != null)
+            {
+                var delRes = await userManager.DeleteAsync(linkedUser);
+                if (!delRes.Succeeded)
+                {
+                    var errs = string.Join("; ", delRes.Errors.Select(e => e.Description));
+                    
+                    return (true, $"Vendor deleted, but its login could not be removed: {errs}");
+                }
+            }
+
+            return (true, "Vendor and linked account deleted");
         }
 
 
@@ -641,5 +763,3 @@ namespace VehicleManagementSystem.Services.Implementations
         }
     }
 }
-
-
