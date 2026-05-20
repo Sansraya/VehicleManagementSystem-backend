@@ -4,7 +4,6 @@ namespace VehicleManagementSystem.Dtos.Models
 {
     public class VendorModel
     {
-       
         [Required]
         [StringLength(50, MinimumLength = 3)]
         public required string Username { get; set; }
@@ -13,10 +12,10 @@ namespace VehicleManagementSystem.Dtos.Models
         [EmailAddress]
         public required string Email { get; set; }
 
-        [Required]
+      
         [StringLength(100, MinimumLength = 6)]
         [DataType(DataType.Password)]
-        public required string Password { get; set; }
+        public string? Password { get; set; }
 
         [StringLength(50, MinimumLength = 3)]
         public string? FirstName { get; set; }

@@ -21,9 +21,13 @@ namespace VehicleManagementSystem.Services.Implementations
 
         public async Task<(bool Success, string Message, Guid? VendorId)> CreateVendorAsync(VendorModel model)
         {
+            
+            if (string.IsNullOrWhiteSpace(model.Password) || model.Password.Length < 6)
+                return (false, "Password is required (minimum 6 characters) when creating a vendor.", null);
+
             var existingUser = await userManager.FindByEmailAsync(model.Email);
             if (existingUser != null)
-                return (false, "Vendor did not create currently!", null);
+                return (false, "A user with this email already exists.", null);
 
             var user = new User
             {
@@ -53,7 +57,6 @@ namespace VehicleManagementSystem.Services.Implementations
                 Address = model.Address ?? "",
                 ContactPerson = model.ContactPerson ?? "",
                 CreatedAt = DateTime.UtcNow
-
             };
 
             await dbContext.Vendors.AddAsync(vendor);
@@ -99,13 +102,11 @@ namespace VehicleManagementSystem.Services.Implementations
             };
         }
 
-        
         public async Task<(bool Success, string Message)> UpdateVendorAsync(Guid id, VendorModel model)
         {
             var vendor = await dbContext.Vendors.FindAsync(id);
             if (vendor == null) return (false, "Vendor not found");
 
-            
             var linkedUser = await userManager.FindByEmailAsync(vendor.Email);
 
             
@@ -116,14 +117,12 @@ namespace VehicleManagementSystem.Services.Implementations
                     return (false, "Another user already exists with that email.");
             }
 
-            
             vendor.Name = model.Username;
             vendor.ContactPerson = model.ContactPerson ?? vendor.ContactPerson;
             vendor.Email = model.Email;
             vendor.Phone = model.Phone ?? vendor.Phone;
             vendor.Address = model.Address ?? vendor.Address;
 
-           
             if (linkedUser != null)
             {
                 if (!string.Equals(linkedUser.Email, model.Email, StringComparison.OrdinalIgnoreCase))
@@ -135,7 +134,6 @@ namespace VehicleManagementSystem.Services.Implementations
                         return (false, $"Failed to update vendor email: {errs}");
                     }
 
-                    
                     var setUser = await userManager.SetUserNameAsync(linkedUser, model.Email);
                     if (!setUser.Succeeded)
                     {
@@ -147,6 +145,23 @@ namespace VehicleManagementSystem.Services.Implementations
                 linkedUser.FirstName = model.FirstName ?? linkedUser.FirstName;
                 linkedUser.LastName = model.LastName ?? linkedUser.LastName;
                 linkedUser.PhoneNumber = model.Phone ?? linkedUser.PhoneNumber;
+
+                
+                if (!string.IsNullOrWhiteSpace(model.Password))
+                {
+                    var removePass = await userManager.RemovePasswordAsync(linkedUser);
+                    if (!removePass.Succeeded)
+                    {
+                        var errs = string.Join("; ", removePass.Errors.Select(e => e.Description));
+                        return (false, $"Failed to reset password: {errs}");
+                    }
+                    var addPass = await userManager.AddPasswordAsync(linkedUser, model.Password);
+                    if (!addPass.Succeeded)
+                    {
+                        var errs = string.Join("; ", addPass.Errors.Select(e => e.Description));
+                        return (false, $"Failed to set new password: {errs}");
+                    }
+                }
 
                 var userUpdate = await userManager.UpdateAsync(linkedUser);
                 if (!userUpdate.Succeeded)
@@ -166,97 +181,108 @@ namespace VehicleManagementSystem.Services.Implementations
             var vendor = await dbContext.Vendors.FindAsync(id);
             if (vendor == null) return (false, "Vendor not found");
 
-          
-            var partsInStock = await dbContext.Parts
-                .Where(p => p.VendorId == id && p.StockQuantity > 0)
-                .CountAsync();
-            if (partsInStock > 0)
-                return (false, $"Cannot delete vendor — {partsInStock} part(s) still in stock. Sell or remove them first.");
-
-            var unpaidPurchases = await dbContext.PurchaseInvoices
-                .Where(pi => pi.VendorId == id && pi.Status == "Pending")
-                .CountAsync();
-            if (unpaidPurchases > 0)
-                return (false, $"Cannot delete vendor — {unpaidPurchases} purchase invoice(s) still pending.");
-
-            
-            var apptsWithVendor = await dbContext.Appointments
-                .Where(a => a.VendorId == id)
-                .ToListAsync();
-            foreach (var a in apptsWithVendor) a.VendorId = null;
-
-            
-            var reviewsWithVendor = await dbContext.Reviews
-                .Where(r => r.VendorId == id)
-                .ToListAsync();
-            foreach (var r in reviewsWithVendor) r.VendorId = null;
-
-            
-            var vendorInvoices = await dbContext.VendorInvoices
-                .Where(vi => vi.VendorId == id)
-                .Include(vi => vi.Items)
-                .ToListAsync();
-            foreach (var vi in vendorInvoices)
+            using var tx = await dbContext.Database.BeginTransactionAsync();
+            try
             {
-                dbContext.VendorInvoiceItems.RemoveRange(vi.Items);
-            }
-            dbContext.VendorInvoices.RemoveRange(vendorInvoices);
+                
+                var apptsWithVendor = await dbContext.Appointments
+                    .Where(a => a.VendorId == id)
+                    .ToListAsync();
+                foreach (var a in apptsWithVendor) a.VendorId = null;
 
-            var vendorAssignments = await dbContext.VendorAssignments
-                .Where(va => va.VendorId == id)
-                .ToListAsync();
-            dbContext.VendorAssignments.RemoveRange(vendorAssignments);
+                
+                var reviewsWithVendor = await dbContext.Reviews
+                    .Where(r => r.VendorId == id)
+                    .ToListAsync();
+                foreach (var r in reviewsWithVendor) r.VendorId = null;
 
-           
-            var emptyParts = await dbContext.Parts
-                .Where(p => p.VendorId == id)
-                .ToListAsync();
-            dbContext.Parts.RemoveRange(emptyParts);
-
-           
-            var oldPurchases = await dbContext.PurchaseInvoices
-                .Where(pi => pi.VendorId == id)
-                .Include(pi => pi.Items)
-                .ToListAsync();
-            foreach (var pi in oldPurchases)
-            {
-                dbContext.PurchaseInvoiceItems.RemoveRange(pi.Items);
-            }
-            dbContext.PurchaseInvoices.RemoveRange(oldPurchases);
-
-            
-            dbContext.Vendors.Remove(vendor);
-
-            
-            var linkedUser = await userManager.FindByEmailAsync(vendor.Email);
-
-            await dbContext.SaveChangesAsync();
-
-            if (linkedUser != null)
-            {
-                var delRes = await userManager.DeleteAsync(linkedUser);
-                if (!delRes.Succeeded)
+                
+                var vendorInvoices = await dbContext.VendorInvoices
+                    .Where(vi => vi.VendorId == id)
+                    .Include(vi => vi.Items)
+                    .ToListAsync();
+                foreach (var vi in vendorInvoices)
                 {
-                    var errs = string.Join("; ", delRes.Errors.Select(e => e.Description));
-                    
-                    return (true, $"Vendor deleted, but its login could not be removed: {errs}");
+                    dbContext.VendorInvoiceItems.RemoveRange(vi.Items);
                 }
+                dbContext.VendorInvoices.RemoveRange(vendorInvoices);
+
+              
+                var vendorAssignments = await dbContext.VendorAssignments
+                    .Where(va => va.VendorId == id)
+                    .ToListAsync();
+                dbContext.VendorAssignments.RemoveRange(vendorAssignments);
+
+              
+                var partIds = await dbContext.Parts
+                    .Where(p => p.VendorId == id)
+                    .Select(p => p.PartsId)
+                    .ToListAsync();
+
+                if (partIds.Count > 0)
+                {
+                    var reviewsOnParts = await dbContext.Reviews
+                        .Where(r => r.PartId != null && partIds.Contains(r.PartId!.Value))
+                        .ToListAsync();
+                    foreach (var r in reviewsOnParts) r.PartId = null;
+
+                    var saleItemsOnParts = await dbContext.SaleItems
+                        .Where(si => si.PartsId != null && partIds.Contains(si.PartsId!.Value))
+                        .ToListAsync();
+                    foreach (var si in saleItemsOnParts) si.PartsId = null;
+                }
+
+                
+                var oldPurchases = await dbContext.PurchaseInvoices
+                    .Where(pi => pi.VendorId == id)
+                    .Include(pi => pi.Items)
+                    .ToListAsync();
+                foreach (var pi in oldPurchases)
+                {
+                    dbContext.PurchaseInvoiceItems.RemoveRange(pi.Items);
+                }
+                dbContext.PurchaseInvoices.RemoveRange(oldPurchases);
+
+                
+                var partsToDelete = await dbContext.Parts
+                    .Where(p => p.VendorId == id)
+                    .ToListAsync();
+                dbContext.Parts.RemoveRange(partsToDelete);
+
+                
+                dbContext.Vendors.Remove(vendor);
+
+                await dbContext.SaveChangesAsync();
+
+                
+                var linkedUser = await userManager.FindByEmailAsync(vendor.Email);
+                if (linkedUser != null)
+                {
+                    var delRes = await userManager.DeleteAsync(linkedUser);
+                    if (!delRes.Succeeded)
+                    {
+                        var errs = string.Join("; ", delRes.Errors.Select(e => e.Description));
+                        await tx.CommitAsync();
+                        return (true, $"Vendor deleted, but linked login could not be removed: {errs}");
+                    }
+                }
+
+                await tx.CommitAsync();
+                return (true, "Vendor and all related records deleted.");
             }
-
-            return (true, "Vendor and linked account deleted");
+            catch (Exception ex)
+            {
+                await tx.RollbackAsync();
+                return (false, $"Failed to delete vendor: {ex.Message}");
+            }
         }
-
 
         public async Task<VendorResponse> AddPart(AddPartByVendorDTO vendorDTO)
         {
             var vendor = await dbContext.Vendors.FindAsync(vendorDTO.Vendorid);
             if (vendor == null)
             {
-                return new VendorResponse
-                {
-                    Success = false,
-                    Message = "Vendor not found."
-                };
+                return new VendorResponse { Success = false, Message = "Vendor not found." };
             }
 
             var part = new Parts
@@ -274,23 +300,15 @@ namespace VehicleManagementSystem.Services.Implementations
 
             await dbContext.Parts.AddAsync(part);
             await dbContext.SaveChangesAsync();
-            return new VendorResponse
-            {
-                Success = true,
-                Message = "Part added successfully."
-            };
-
+            return new VendorResponse { Success = true, Message = "Part added successfully." };
         }
+
         public async Task<VendorResponse> UpdatePart(Guid partId, AddPartByVendorDTO vendorDTO)
         {
             var part = await dbContext.Parts.FindAsync(partId);
             if (part == null)
             {
-                return new VendorResponse
-                {
-                    Success = false,
-                    Message = "Part not found."
-                };
+                return new VendorResponse { Success = false, Message = "Part not found." };
             }
             part.Name = vendorDTO.Name;
             part.PartCode = vendorDTO.PartCode;
@@ -301,11 +319,7 @@ namespace VehicleManagementSystem.Services.Implementations
             part.UpdatedAt = DateTime.UtcNow;
             dbContext.Parts.Update(part);
             await dbContext.SaveChangesAsync();
-            return new VendorResponse
-            {
-                Success = true,
-                Message = "Part updated successfully."
-            };
+            return new VendorResponse { Success = true, Message = "Part updated successfully." };
         }
 
         public async Task<VendorResponse> DeletePart(Guid partId)
@@ -313,39 +327,26 @@ namespace VehicleManagementSystem.Services.Implementations
             var part = await dbContext.Parts.FindAsync(partId);
             if (part == null)
             {
-                return new VendorResponse
-                {
-                    Success = false,
-                    Message = "Part not found."
-                };
+                return new VendorResponse { Success = false, Message = "Part not found." };
             }
             dbContext.Parts.Remove(part);
             await dbContext.SaveChangesAsync();
-            return new VendorResponse
-            {
-                Success = true,
-                Message = "Part deleted successfully."
-            };
+            return new VendorResponse { Success = true, Message = "Part deleted successfully." };
         }
 
-
         public async Task<(bool Success, string Message, VendorAssignmentDto? Assignment)>
-         AssignVendorToPartRequestAsync(AssignVendorToPartRequestModel model, string assignedByUserId)
+            AssignVendorToPartRequestAsync(AssignVendorToPartRequestModel model, string assignedByUserId)
         {
             var partRequest = await dbContext.PartRequests
                 .Include(p => p.Customer)
                 .FirstOrDefaultAsync(p => p.PartRequestId == model.PartRequestId);
-            if (partRequest == null)
-                return (false, "Part request not found.", null);
+            if (partRequest == null) return (false, "Part request not found.", null);
 
             var vendor = await dbContext.Vendors.FindAsync(model.VendorId);
-            if (vendor == null)
-                return (false, "Vendor not found.", null);
+            if (vendor == null) return (false, "Vendor not found.", null);
 
             var assignedBy = await dbContext.Users.FindAsync(assignedByUserId);
-            if (assignedBy == null)
-                return (false, "Assigning user not found.", null);
-
+            if (assignedBy == null) return (false, "Assigning user not found.", null);
 
             var duplicate = await dbContext.VendorAssignments
                 .AnyAsync(va => va.PartRequestId == model.PartRequestId
@@ -372,24 +373,19 @@ namespace VehicleManagementSystem.Services.Implementations
             return (true, "Vendor assigned to part request.", MapToDto(assignment, partRequest.Customer));
         }
 
-
-
         public async Task<(bool Success, string Message, VendorAssignmentDto? Assignment)>
             AssignVendorToAppointmentAsync(AssignVendorToAppointmentModel model, string assignedByUserId)
         {
             var appointment = await dbContext.Appointments
                 .Include(a => a.Customer)
                 .FirstOrDefaultAsync(a => a.AppointmentId == model.AppointmentId);
-            if (appointment == null)
-                return (false, "Appointment not found.", null);
+            if (appointment == null) return (false, "Appointment not found.", null);
 
             var vendor = await dbContext.Vendors.FindAsync(model.VendorId);
-            if (vendor == null)
-                return (false, "Vendor not found.", null);
+            if (vendor == null) return (false, "Vendor not found.", null);
 
             var assignedBy = await dbContext.Users.FindAsync(assignedByUserId);
-            if (assignedBy == null)
-                return (false, "Assigning user not found.", null);
+            if (assignedBy == null) return (false, "Assigning user not found.", null);
 
             var duplicate = await dbContext.VendorAssignments
                 .AnyAsync(va => va.AppointmentId == model.AppointmentId
@@ -415,8 +411,6 @@ namespace VehicleManagementSystem.Services.Implementations
 
             return (true, "Vendor assigned to appointment.", MapToDto(assignment, appointment.Customer));
         }
-
-
 
         public async Task<IEnumerable<VendorAssignmentDto>> GetAllAssignmentsAsync()
         {
@@ -473,21 +467,25 @@ namespace VehicleManagementSystem.Services.Implementations
             return va == null ? null : MapToDto(va, ResolveCustomer(va));
         }
 
-
-
         public async Task<(bool Success, string Message)> DeleteAssignmentAsync(Guid assignmentId)
         {
-            var va = await dbContext.VendorAssignments.FindAsync(assignmentId);
+            var va = await dbContext.VendorAssignments
+                .Include(x => x.VendorInvoice).ThenInclude(vi => vi != null ? vi.Items : null!)
+                .FirstOrDefaultAsync(x => x.VendorAssignmentId == assignmentId);
+
             if (va == null) return (false, "Assignment not found.");
-            if (va.Status == "Accepted")
-                return (false, "Cannot delete an accepted assignment. Deny it first or cancel the invoice.");
+
+            
+            if (va.VendorInvoice != null)
+            {
+                dbContext.VendorInvoiceItems.RemoveRange(va.VendorInvoice.Items);
+                dbContext.VendorInvoices.Remove(va.VendorInvoice);
+            }
 
             dbContext.VendorAssignments.Remove(va);
             await dbContext.SaveChangesAsync();
             return (true, "Assignment deleted.");
         }
-
-
 
         private static User? ResolveCustomer(VendorAssignment va)
         {
@@ -498,7 +496,7 @@ namespace VehicleManagementSystem.Services.Implementations
 
         private static VendorAssignmentDto MapToDto(VendorAssignment va, User? customer)
         {
-            var dto = new VendorAssignmentDto
+            return new VendorAssignmentDto
             {
                 VendorAssignmentId = va.VendorAssignmentId,
                 VendorId = va.VendorId,
@@ -523,13 +521,7 @@ namespace VehicleManagementSystem.Services.Implementations
                     ? null
                     : $"{customer.FirstName} {customer.LastName}".Trim() is { Length: > 0 } n ? n : customer.UserName,
             };
-            return dto;
         }
-
-
-
-
-
 
         public async Task<IEnumerable<VendorAssignmentDto>> GetMyAssignmentsAsync(Guid vendorId)
         {
@@ -560,8 +552,6 @@ namespace VehicleManagementSystem.Services.Implementations
             return va == null ? null : MapAssignmentToDto(va);
         }
 
-
-
         public async Task<(bool Success, string Message, VendorAssignmentDto? Assignment)>
             RespondToAssignmentAsync(Guid assignmentId, Guid vendorId, VendorRespondModel model)
         {
@@ -589,8 +579,6 @@ namespace VehicleManagementSystem.Services.Implementations
             return (true, $"Assignment {model.Decision.ToLower()}.", MapAssignmentToDto(va));
         }
 
-
-
         public async Task<(bool Success, string Message, VendorInvoiceDto? Invoice)>
             GenerateInvoiceAsync(Guid assignmentId, Guid vendorId, CreateVendorInvoiceModel model)
         {
@@ -610,10 +598,8 @@ namespace VehicleManagementSystem.Services.Implementations
             if (va.VendorInvoice != null)
                 return (false, "An invoice already exists for this assignment.", null);
 
-
             var customer = va.PartRequest?.Customer ?? va.Appointment?.Customer;
             if (customer == null) return (false, "Could not resolve customer for this assignment.", null);
-
 
             foreach (var item in model.Items)
             {
@@ -659,8 +645,6 @@ namespace VehicleManagementSystem.Services.Implementations
             return (true, "Invoice generated successfully.", MapInvoiceToDto(invoice, va));
         }
 
-
-
         public async Task<IEnumerable<VendorInvoiceDto>> GetMyInvoicesAsync(Guid vendorId)
         {
             var invoices = await dbContext.VendorInvoices
@@ -693,8 +677,6 @@ namespace VehicleManagementSystem.Services.Implementations
 
             return vi == null ? null : MapInvoiceToDto(vi, vi.VendorAssignment);
         }
-
-
 
         private static VendorAssignmentDto MapAssignmentToDto(VendorAssignment va)
         {
