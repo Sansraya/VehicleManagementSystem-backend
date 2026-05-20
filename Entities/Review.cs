@@ -20,6 +20,9 @@ namespace VehicleManagementSystem.Entities
 
         public Guid? PartId { get; set; }
         public Parts? Part { get; set; }
+        public Guid? PartRequestId { get; set; }
+
+        public PartRequest? PartRequest { get; set; }
 
         public int Rating { get; set; }
 
