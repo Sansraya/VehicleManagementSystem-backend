@@ -119,7 +119,7 @@ namespace VehicleManagementSystem.Controllers
             {
                 ReviewId = review.ReviewId,
                 CustomerId = review.CustomerId,
-                VendorId = review.VendorId,
+                VendorId = review.VendorId ?? Guid.Empty,
                 AppointmentId = review.AppointmentId,
                 PartId = review.PartId,
                 PartRequestId = review.PartRequestId,
@@ -191,7 +191,7 @@ namespace VehicleManagementSystem.Controllers
                 {
                     ReviewId = r.ReviewId,
                     CustomerId = r.CustomerId,
-                    VendorId = r.VendorId,
+                    VendorId = r.VendorId ?? Guid.Empty,
                     AppointmentId = r.AppointmentId,
                     PartId = r.PartId,
                     PartRequestId = r.PartRequestId,
@@ -214,7 +214,7 @@ namespace VehicleManagementSystem.Controllers
                 {
                     ReviewId = r.ReviewId,
                     CustomerId = r.CustomerId,
-                    VendorId = r.VendorId,
+                    VendorId = r.VendorId ?? Guid.Empty,
                     AppointmentId = r.AppointmentId,
                     PartId = r.PartId,
                     PartRequestId = r.PartRequestId,
@@ -237,7 +237,7 @@ namespace VehicleManagementSystem.Controllers
                 {
                     ReviewId = r.ReviewId,
                     CustomerId = r.CustomerId,
-                    VendorId = r.VendorId,
+                    VendorId = r.VendorId ?? Guid.Empty,
                     AppointmentId = r.AppointmentId,
                     PartId = r.PartId,
                     PartRequestId = r.PartRequestId,
@@ -260,7 +260,7 @@ namespace VehicleManagementSystem.Controllers
                 {
                     ReviewId = r.ReviewId,
                     CustomerId = r.CustomerId,
-                    VendorId = r.VendorId,
+                    VendorId = r.VendorId ?? Guid.Empty,
                     AppointmentId = r.AppointmentId,
                     PartId = r.PartId,
                     PartRequestId = r.PartRequestId,
