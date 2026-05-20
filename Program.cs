@@ -50,6 +50,7 @@ builder.Services.AddScoped<ICustomerReportService, CustomerReportService>();
 
 builder.Services.AddScoped<IEmailService,EmailService>();
 builder.Services.AddScoped<IPredictionService,PredictionService>();
+builder.Services.AddHostedService<CreditReminderService>();
 
 var app = builder.Build();
 
